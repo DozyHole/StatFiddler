@@ -315,7 +315,7 @@ public class DataCompiler : MonoBehaviour {
                         {
                             txtValue.text = listAltered.ElementAt(listIndex).Value.pointsAltered.ToString();
                             // colour
-                            txtValue.color = Color.black;
+                            txtValue.color = Color.white;
                             if (listAltered.ElementAt(listIndex).Value.positionAltered > listAltered.ElementAt(listIndex).Value.position)
                             {
                                 txtValue.color = Color.red;

@@ -13,6 +13,13 @@ class TeamData
     public int positionAltered;
     public int points;
     public int pointsAltered;
+    // for share page
+    public int played;
+    public int won;
+    public int drawn;
+    public int lost;
+    public int goalsFor;
+    public int goalsAgainst;
 }
 
 public class Fixture
@@ -40,6 +47,7 @@ public class Fixture
 public class DataCompiler : MonoBehaviour {
 
     public SimpleSQL.SimpleSQLManager dbManager;
+    // Main Canvas View
     public Transform ScrollViewCurrentContent;
     public Transform PointsForWinHomeInput;
     public Transform PointsForWinAwayInput;
@@ -52,12 +60,18 @@ public class DataCompiler : MonoBehaviour {
     public Transform CheckboxShotOnTarget;
     public Transform CheckboxShot;
 
+    // Share Canvas View
+    public Transform[] TableTeams;
+    public Transform[] TablePoints;
+
     List<Fixture> fixtures;
     Dictionary<string, TeamData> map;
+    List<KeyValuePair<string, TeamData>> listAltered;
 
     // Use this for initialization
     void Start () {
         map         = new Dictionary<string, TeamData>();
+       // listAltered = new List<KeyValuePair<string, TeamData>>();
         string sql  = "SELECT * FROM E0";
         fixtures = dbManager.Query<Fixture>(sql);
         CompileTable();
@@ -103,6 +117,8 @@ public class DataCompiler : MonoBehaviour {
 
     public void CompileTable()
     {
+        map.Clear();
+
         int pointsForWinHome    = int.Parse(PointsForWinHomeInput.GetComponent<InputField>().text);
         int pointsForWinAway    = int.Parse(PointsForWinAwayInput.GetComponent<InputField>().text);
         int pointsForDrawHome   = int.Parse(PointsForDrawHomeInput.GetComponent<InputField>().text);
@@ -224,18 +240,27 @@ public class DataCompiler : MonoBehaviour {
             if (totalHomeGoals > totalAwayGoals)
             {
                 // home win
-                    map[fixture.HomeTeam].pointsAltered = map[fixture.HomeTeam].pointsAltered + pointsForWinHome;
+                map[fixture.HomeTeam].pointsAltered = map[fixture.HomeTeam].pointsAltered + pointsForWinHome;
+                // share screen stats
+                map[fixture.HomeTeam].won++;
+                map[fixture.AwayTeam].lost++;
             }
             else if (totalHomeGoals < totalAwayGoals)
             {
                 // away win
-                    map[fixture.AwayTeam].pointsAltered = map[fixture.AwayTeam].pointsAltered + pointsForWinAway;
+                map[fixture.AwayTeam].pointsAltered = map[fixture.AwayTeam].pointsAltered + pointsForWinAway;
+                // share screen stats
+                map[fixture.HomeTeam].lost++;
+                map[fixture.AwayTeam].won++;
             }
             else
             {
                 // draw
                 map[fixture.HomeTeam].pointsAltered = map[fixture.HomeTeam].pointsAltered + pointsForDrawHome;
                 map[fixture.AwayTeam].pointsAltered = map[fixture.AwayTeam].pointsAltered + pointsForDrawAway;
+                // share screen stats
+                map[fixture.HomeTeam].drawn++;
+                map[fixture.AwayTeam].drawn++;
 
             }
             
@@ -259,7 +284,9 @@ public class DataCompiler : MonoBehaviour {
         );
 
         //sort by value
-        List<KeyValuePair<string, TeamData>> listAltered = map.ToList();
+        if(listAltered != null)
+            listAltered.Clear();
+        listAltered = map.ToList();
         listAltered.Sort(
             delegate (KeyValuePair<string, TeamData> pair1,
             KeyValuePair<string, TeamData> pair2)
@@ -277,6 +304,7 @@ public class DataCompiler : MonoBehaviour {
 
         AssignPositions(list, listAltered);
 
+        // set league table view
         int listIndex = 0;
         foreach(Transform trans in ScrollViewCurrentContent)
         {
@@ -339,9 +367,9 @@ public class DataCompiler : MonoBehaviour {
             
             listIndex++;
         }
-        map.Clear();
+        // map.Clear();
+        PopulateTableShare();
     }
-
 
     void AssignPositions(List<KeyValuePair<string, TeamData>> original, List<KeyValuePair<string, TeamData>> updated)
     {
@@ -358,6 +386,28 @@ public class DataCompiler : MonoBehaviour {
             index++;
         }    
     }
+
+    void PopulateTableShare()
+    {
+        int index = 0;
+        foreach(KeyValuePair<string, TeamData> kv in listAltered)
+        {
+            string keyTeam = kv.Key;
+            TeamData valueData = kv.Value;
+
+            if(TableTeams.Length > index)
+            {
+                // we have a etext item in array
+                Text txt = TableTeams[index].GetComponent<Text>();
+                txt.text = keyTeam;
+
+                txt = TablePoints[index].GetComponent<Text>();
+                txt.text = valueData.pointsAltered.ToString();
+            }
+            index++;
+        }
+    }
+
 }
 
 

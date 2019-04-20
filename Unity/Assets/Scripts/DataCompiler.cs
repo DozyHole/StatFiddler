@@ -44,9 +44,13 @@ public class Fixture
 } 
 
 
+
 public class DataCompiler : MonoBehaviour {
 
     public SimpleSQL.SimpleSQLManager dbManager;
+    public SimpleSQL.SimpleSQLManager[] dbManagerArr;
+    SimpleSQL.SimpleSQLManager dbManagerCurr;
+
     // Main Canvas View
     public Transform ScrollViewCurrentContent;
     public Transform PointsForWinHomeInput;
@@ -54,6 +58,7 @@ public class DataCompiler : MonoBehaviour {
     public Transform PointsForDrawHomeInput;
     public Transform PointsForDrawAwayInput;
     public Transform DropDownDivision;
+    public Transform DropDownYear;
     public Transform CheckboxScoringFirstHalf;
     public Transform CheckboxScoringSecondHalf;
     public Transform CheckboxWoodwork;
@@ -62,7 +67,14 @@ public class DataCompiler : MonoBehaviour {
 
     // Share Canvas View
     public Transform[] TableTeams;
+    public Transform[] TablePlayed;
     public Transform[] TablePoints;
+    public Transform[] TableWon;
+    public Transform[] TableLost;
+    public Transform[] TableDrawn;
+    public Transform[] TableGoalsFor;
+    public Transform[] TableGoalsAgainst;
+
 
     List<Fixture> fixtures;
     Dictionary<string, TeamData> map;
@@ -74,6 +86,7 @@ public class DataCompiler : MonoBehaviour {
        // listAltered = new List<KeyValuePair<string, TeamData>>();
         string sql  = "SELECT * FROM E0";
         fixtures = dbManager.Query<Fixture>(sql);
+
         CompileTable();
     }
 	
@@ -85,10 +98,18 @@ public class DataCompiler : MonoBehaviour {
     public void OnDestroy(){
         dbManager.Close();
         dbManager.Dispose();
+
+
     }
 
     public void UpdateDivision()
     {
+        // Database - get country/year
+        int year = DropDownYear.GetComponent<Dropdown>().value;
+        dbManagerCurr = dbManagerArr[year];
+
+
+
         // EN
         int div = DropDownDivision.GetComponent<Dropdown>().value;
         string strDiv = "E0";
@@ -111,7 +132,8 @@ public class DataCompiler : MonoBehaviour {
                 break;
         }
         string sql = "SELECT * FROM " + strDiv;
-        fixtures = dbManager.Query<Fixture>(sql);
+        fixtures = dbManagerCurr.Query<Fixture>(sql);
+        //fixtures = dbManager.Query<Fixture>(sql);
         CompileTable();
     }
 
@@ -218,6 +240,8 @@ public class DataCompiler : MonoBehaviour {
                 totalAwayGoals += fixture.AHW; // woodwork
             }
 
+
+
             //** actual results **
             if (fixture.FTHG > fixture.FTAG)
             {
@@ -237,6 +261,15 @@ public class DataCompiler : MonoBehaviour {
             }
 
             //** altered results based on selections **
+
+            map[fixture.HomeTeam].played++;
+            map[fixture.AwayTeam].played++;
+            map[fixture.HomeTeam].goalsFor      = map[fixture.HomeTeam].goalsFor + totalHomeGoals;
+            map[fixture.HomeTeam].goalsAgainst  = map[fixture.HomeTeam].goalsAgainst + totalAwayGoals;
+
+            map[fixture.AwayTeam].goalsFor      = map[fixture.AwayTeam].goalsFor + totalAwayGoals;
+            map[fixture.AwayTeam].goalsAgainst  = map[fixture.AwayTeam].goalsAgainst + totalHomeGoals;
+
             if (totalHomeGoals > totalAwayGoals)
             {
                 // home win
@@ -397,12 +430,38 @@ public class DataCompiler : MonoBehaviour {
 
             if(TableTeams.Length > index)
             {
-                // we have a etext item in array
-                Text txt = TableTeams[index].GetComponent<Text>();
-                txt.text = keyTeam;
+                // we have a text item in array
+                // name
+                Text txt    = TableTeams[index].GetComponent<Text>();
+                txt.text    = keyTeam;
 
-                txt = TablePoints[index].GetComponent<Text>();
-                txt.text = valueData.pointsAltered.ToString();
+                // played
+                txt         = TablePlayed[index].GetComponent<Text>();
+                txt.text    = valueData.played.ToString();
+
+                // won
+                txt         = TableWon[index].GetComponent<Text>();
+                txt.text    = valueData.won.ToString();
+
+                // lost
+                txt         = TableLost[index].GetComponent<Text>();
+                txt.text    = valueData.lost.ToString();
+
+                // drawn
+                txt         = TableDrawn[index].GetComponent<Text>();
+                txt.text    = valueData.drawn.ToString();
+
+                // goals for
+                txt = TableGoalsFor[index].GetComponent<Text>();
+                txt.text = valueData.goalsFor.ToString();
+
+                // goals for
+                txt = TableGoalsAgainst[index].GetComponent<Text>();
+                txt.text = valueData.goalsAgainst.ToString();
+
+                // points
+                txt         = TablePoints[index].GetComponent<Text>();
+                txt.text    = valueData.pointsAltered.ToString();
             }
             index++;
         }

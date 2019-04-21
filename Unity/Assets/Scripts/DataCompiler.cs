@@ -99,6 +99,11 @@ public class DataCompiler : MonoBehaviour {
         dbManager.Close();
         dbManager.Dispose();
 
+        foreach(SimpleSQL.SimpleSQLManager m in dbManagerArr)
+        {
+            m.Close();
+            m.Dispose();
+        }
 
     }
 
@@ -374,6 +379,19 @@ public class DataCompiler : MonoBehaviour {
                     {
                         if (haveData)
                         {
+                            Transform transChildDiff = null;
+                            if (txtValue.transform.childCount > 0)
+                                transChildDiff = txtValue.transform.GetChild(0);
+
+                            Text txtValueDiff = null; 
+                            if(transChildDiff)
+                                txtValueDiff = transChildDiff.GetComponentInChildren<Text>();
+
+                            if (txtValueDiff)
+                            {
+                                txtValueDiff.text = "";
+                            }
+
                             txtValue.text = listAltered.ElementAt(listIndex).Value.pointsAltered.ToString();
                             // colour
                             txtValue.color = Color.white;
@@ -381,13 +399,23 @@ public class DataCompiler : MonoBehaviour {
                             {
                                 txtValue.color = Color.red;
                                 int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered;
-                                txtValue.text = txtValue.text + " (" + diff + ")";
+                                // txtValue.text = txtValue.text + " " + diff + "";
+                                if (txtValueDiff)
+                                {
+                                    txtValueDiff.text = diff.ToString();
+                                    txtValueDiff.color = Color.red;
+                                }
                             }
                             if (listAltered.ElementAt(listIndex).Value.positionAltered < listAltered.ElementAt(listIndex).Value.position)
                             {
                                 txtValue.color = Color.green;
                                 int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered ;
-                                txtValue.text = txtValue.text + " (" + diff + ")";
+                                //txtValue.text = txtValue.text + " +" + diff + "";
+                                if (txtValueDiff)
+                                {
+                                    txtValueDiff.text = "+" + diff.ToString();
+                                    txtValueDiff.color = Color.green;
+                                }
                             }
                         }
                         else

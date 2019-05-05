@@ -20,6 +20,7 @@ class TeamData
     public int lost;
     public int goalsFor;
     public int goalsAgainst;
+    public int diff;
 }
 
 public class Fixture
@@ -41,6 +42,8 @@ public class Fixture
     public int      AST { get; set; }       // away - shots on target
     public int      HHW { get; set; }       // home - hit woodwork
     public int      AHW { get; set; }       // away - hit woodwork
+    public int      HF { get; set; }        // home - fouls
+    public int      AF { get; set; }        // away - fouls
 } 
 
 
@@ -64,6 +67,9 @@ public class DataCompiler : MonoBehaviour {
     public Transform CheckboxWoodwork;
     public Transform CheckboxShotOnTarget;
     public Transform CheckboxShot;
+    public Transform CheckboxFoul;
+    public Transform TotalGamesPlayedInput;
+    public Transform TotalGamesPlayedSlider;
 
     // Share Canvas View
     public Transform[] TableTeams;
@@ -74,7 +80,9 @@ public class DataCompiler : MonoBehaviour {
     public Transform[] TableDrawn;
     public Transform[] TableGoalsFor;
     public Transform[] TableGoalsAgainst;
+    public Transform[] TableDiff;
 
+    public Transform SliderTableOffset;
 
     List<Fixture> fixtures;
     Dictionary<string, TeamData> map;
@@ -83,11 +91,11 @@ public class DataCompiler : MonoBehaviour {
     // Use this for initialization
     void Start () {
         map         = new Dictionary<string, TeamData>();
-       // listAltered = new List<KeyValuePair<string, TeamData>>();
-        string sql  = "SELECT * FROM E0";
-        fixtures = dbManager.Query<Fixture>(sql);
-
-        CompileTable();
+        // listAltered = new List<KeyValuePair<string, TeamData>>();
+        // string sql  = "SELECT * FROM E0";
+        //fixtures = dbManager.Query<Fixture>(sql);
+        //CompileTable();
+        UpdateDivision();
     }
 	
 	// Update is called once per frame
@@ -138,7 +146,14 @@ public class DataCompiler : MonoBehaviour {
         }
         string sql = "SELECT * FROM " + strDiv;
         fixtures = dbManagerCurr.Query<Fixture>(sql);
-        //fixtures = dbManager.Query<Fixture>(sql);
+        CompileTable();
+        // set max games
+        // total games per team
+        int totalTeams = map.Count;
+        TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * 2;
+        TotalGamesPlayedSlider.GetComponent<Slider>().value = (totalTeams - 1) * 2;
+
+        // do again in case we are dont have all games in data (part way through season)
         CompileTable();
     }
 
@@ -155,12 +170,25 @@ public class DataCompiler : MonoBehaviour {
         bool woodwork           = CheckboxWoodwork.GetComponent<Toggle>().isOn;
         bool onTarget           = CheckboxShotOnTarget.GetComponent<Toggle>().isOn;
         bool shot               = CheckboxShot.GetComponent<Toggle>().isOn;
+        bool foul               = CheckboxFoul.GetComponent<Toggle>().isOn;
+        // if these remain 0 after all fixtures then we know they are wither not present in database or irrelevant anyway do we should disable the ui
+        int totalShots      = 0;
+        int totalOnTarget   = 0;
+        int totalWoodwork   = 0;
+        int totalFouls      = 0;
+
+        //int count = CalculateGameCount(fixtures.Count);
+        // get it from value of slider, not text box
+        string strTotalGamesAllowed = TotalGamesPlayedInput.GetComponentInChildren<Text>().text;
+        int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;    //int.Parse(strTotalGamesAllowed);
+
+        Debug.Log(totalGamesAllowed);
 
         // create map of teams with points collected as value    
-
         foreach (Fixture fixture in fixtures)
-        {          
-            if(!map.ContainsKey(fixture.HomeTeam)){
+        {
+
+            if (!map.ContainsKey(fixture.HomeTeam)){
                 TeamData data = new TeamData();
                 data.position       = 0;
                 data.points         = 0;
@@ -176,6 +204,23 @@ public class DataCompiler : MonoBehaviour {
                 data.name           = fixture.AwayTeam;
                 map.Add(fixture.AwayTeam, data);
             }
+
+
+            if(map[fixture.HomeTeam].played >= totalGamesAllowed)
+            {
+                // skip this fixture
+                continue;
+            }
+            if (map[fixture.AwayTeam].played >= totalGamesAllowed)
+            {
+                // skip this fixture
+                continue;
+            }
+
+            totalShots += fixture.HS + fixture.AS;
+            totalOnTarget += fixture.HST + fixture.AST;
+            totalWoodwork += fixture.HHW + fixture.AHW;
+            totalFouls += fixture.HF + fixture.AF;
 
             //bool useGoals = true;
             //if (!useGoals)
@@ -245,6 +290,11 @@ public class DataCompiler : MonoBehaviour {
                 totalAwayGoals += fixture.AHW; // woodwork
             }
 
+            if (foul)
+            {
+                totalHomeGoals += fixture.HF; // fouls
+                totalAwayGoals += fixture.AF; // fouls
+            }
 
 
             //** actual results **
@@ -304,6 +354,32 @@ public class DataCompiler : MonoBehaviour {
             
         }
 
+        // total games per team
+        //int totalTeams = map.Count;
+        //TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * 2;
+
+
+        // disable ui if not used
+        CheckboxWoodwork.GetComponent<Toggle>().interactable = true;
+        CheckboxShot.GetComponent<Toggle>().interactable = true;
+        CheckboxShotOnTarget.GetComponent<Toggle>().interactable = true;
+        CheckboxFoul.GetComponent<Toggle>().interactable = true;
+        if (totalWoodwork == 0)
+        {
+            CheckboxWoodwork.GetComponent<Toggle>().interactable = false;
+        }
+        if(totalShots == 0)
+        {
+            CheckboxShot.GetComponent<Toggle>().interactable = false;
+        }
+        if (totalOnTarget == 0)
+        {
+            CheckboxShotOnTarget.GetComponent<Toggle>().interactable = false;
+        }
+        if (totalFouls == 0)
+        {
+            CheckboxFoul.GetComponent<Toggle>().interactable = false;
+        }
         // sort by value
         List<KeyValuePair<string, TeamData>> list = map.ToList();
         list.Sort(
@@ -395,10 +471,12 @@ public class DataCompiler : MonoBehaviour {
                             txtValue.text = listAltered.ElementAt(listIndex).Value.pointsAltered.ToString();
                             // colour
                             txtValue.color = Color.white;
+                            int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered;
+                            listAltered.ElementAt(listIndex).Value.diff = diff;
                             if (listAltered.ElementAt(listIndex).Value.positionAltered > listAltered.ElementAt(listIndex).Value.position)
                             {
                                 txtValue.color = Color.red;
-                                int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered;
+                                //int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered;
                                 // txtValue.text = txtValue.text + " " + diff + "";
                                 if (txtValueDiff)
                                 {
@@ -409,7 +487,7 @@ public class DataCompiler : MonoBehaviour {
                             if (listAltered.ElementAt(listIndex).Value.positionAltered < listAltered.ElementAt(listIndex).Value.position)
                             {
                                 txtValue.color = Color.green;
-                                int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered ;
+                                //int diff = listAltered.ElementAt(listIndex).Value.position - listAltered.ElementAt(listIndex).Value.positionAltered;
                                 //txtValue.text = txtValue.text + " +" + diff + "";
                                 if (txtValueDiff)
                                 {
@@ -448,36 +526,62 @@ public class DataCompiler : MonoBehaviour {
         }    
     }
 
-    void PopulateTableShare()
+    public void PopulateTableShare()
     {
+        int count = listAltered.Count;
+        int offset = 0;// count - 10;
         int index = 0;
+
+        int sliderValue = (int)SliderTableOffset.GetComponent<Slider>().value;
+        switch(sliderValue)
+        {
+            case 0:
+                offset = 0;
+                break;
+            case 1:
+                offset = (count / 2) - 5;
+                break;
+            case 2:
+                offset = count - 10;
+                break;
+        }
+
+
         foreach(KeyValuePair<string, TeamData> kv in listAltered)
         {
+            // we can offset table
+            if (index < offset)
+            {
+                // dont start yet
+                offset--;
+                continue;
+            }
             string keyTeam = kv.Key;
             TeamData valueData = kv.Value;
 
-            if(TableTeams.Length > index)
+            if (TableTeams.Length > index)
             {
                 // we have a text item in array
                 // name
-                Text txt    = TableTeams[index].GetComponent<Text>();
-                txt.text    = keyTeam;
+                Text txt = TableTeams[index].GetComponent<Text>();
+                txt.text = keyTeam;
+                txt.text = (valueData.positionAltered+1) + "." + txt.text;
 
                 // played
-                txt         = TablePlayed[index].GetComponent<Text>();
-                txt.text    = valueData.played.ToString();
+                txt = TablePlayed[index].GetComponent<Text>();
+                txt.text = valueData.played.ToString();
 
                 // won
-                txt         = TableWon[index].GetComponent<Text>();
-                txt.text    = valueData.won.ToString();
+                txt = TableWon[index].GetComponent<Text>();
+                txt.text = valueData.won.ToString();
 
                 // lost
-                txt         = TableLost[index].GetComponent<Text>();
-                txt.text    = valueData.lost.ToString();
+                txt = TableLost[index].GetComponent<Text>();
+                txt.text = valueData.lost.ToString();
 
                 // drawn
-                txt         = TableDrawn[index].GetComponent<Text>();
-                txt.text    = valueData.drawn.ToString();
+                txt = TableDrawn[index].GetComponent<Text>();
+                txt.text = valueData.drawn.ToString();
 
                 // goals for
                 txt = TableGoalsFor[index].GetComponent<Text>();
@@ -488,13 +592,58 @@ public class DataCompiler : MonoBehaviour {
                 txt.text = valueData.goalsAgainst.ToString();
 
                 // points
-                txt         = TablePoints[index].GetComponent<Text>();
-                txt.text    = valueData.pointsAltered.ToString();
+                txt = TablePoints[index].GetComponent<Text>();
+                txt.text = valueData.pointsAltered.ToString();
+
+                // diff
+                txt = TableDiff[index].GetComponent<Text>();
+                txt.color = Color.white;
+                txt.text = valueData.diff.ToString();
+                if (valueData.diff > 0)
+                {
+                    txt.text = "+" + txt.text;
+                    txt.color = Color.green;
+                }
+                if (valueData.diff == 0)
+                {
+                    txt.text = "";
+                    txt.color = Color.green;
+                }
+                if (valueData.diff < 0)
+                {
+                    txt.color = Color.red;
+                }
             }
             index++;
         }
     }
 
+    // calculate how many games per team from total amount of fixtures
+    int CalculateGameCount(int totalfixtureCount)
+    {
+        // each team plys twice so halve fixtures so we can work out amount of teams
+        totalfixtureCount /= 2;
+
+        int nGuess = 0;
+        int loop = 4;
+        while(nGuess != totalfixtureCount)
+        {
+            nGuess = Factorial(loop) / (2 * Factorial(loop - 2));
+            loop++;
+        }
+        return (nGuess-1)*2; // play everyone twice
+    }
+
+    int Factorial(int value)
+    {
+        int total = 1;
+        for(int i = 2; i <= value; i++)
+        {
+            total *= i;
+        }
+        return total;
+    }
+    
 }
 
 

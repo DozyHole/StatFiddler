@@ -44,7 +44,11 @@ public class Fixture
     public int      AHW { get; set; }       // away - hit woodwork
     public int      HF { get; set; }        // home - fouls
     public int      AF { get; set; }        // away - fouls
-} 
+    public int      HY { get; set; }        // home - yellow
+    public int      AY { get; set; }        // sway - yellow
+    public int      HR { get; set; }        // home - red
+    public int      AR { get; set; }        // away - red
+}
 
 
 
@@ -60,6 +64,8 @@ public class DataCompiler : MonoBehaviour {
     public Transform PointsForWinAwayInput;
     public Transform PointsForDrawHomeInput;
     public Transform PointsForDrawAwayInput;
+    public Transform PointsForRedInput;
+    public Transform PointsForYellowInput;
     public Transform DropDownDivision;
     public Transform DropDownYear;
     public Transform CheckboxScoringFirstHalf;
@@ -70,6 +76,13 @@ public class DataCompiler : MonoBehaviour {
     public Transform CheckboxFoul;
     public Transform TotalGamesPlayedInput;
     public Transform TotalGamesPlayedSlider;
+
+    public Transform PointsForWinHomeSlider;
+    public Transform PointsForWinAwaySlider;
+    public Transform PointsForDrawHomeSlider;
+    public Transform PointsForDrawAwaySlider;
+    public Transform PointsForRedSlider;
+    public Transform PointsForYellowSlider;
 
     // Share Canvas View
     public Transform[] TableTeams;
@@ -114,6 +127,28 @@ public class DataCompiler : MonoBehaviour {
         }
 
     }
+
+    public void ResetGui()
+    {
+        PointsForWinHomeSlider.GetComponent<Slider>().value = 3;
+        PointsForWinAwaySlider.GetComponent<Slider>().value = 3;
+        PointsForDrawHomeSlider.GetComponent<Slider>().value = 1;
+        PointsForDrawAwaySlider.GetComponent<Slider>().value = 1;
+        PointsForRedSlider.GetComponent<Slider>().value = 0;
+        PointsForYellowSlider.GetComponent<Slider>().value = 0;
+
+        CheckboxScoringFirstHalf.GetComponent<Toggle>().isOn = true; 
+        CheckboxScoringSecondHalf.GetComponent<Toggle>().isOn = true;
+        
+        CheckboxWoodwork.GetComponent<Toggle>().isOn = false;
+        CheckboxShotOnTarget.GetComponent<Toggle>().isOn = false;
+        CheckboxShot.GetComponent<Toggle>().isOn = false;
+        CheckboxFoul.GetComponent<Toggle>().isOn = false;
+        //TotalGamesPlayedInput;
+        TotalGamesPlayedSlider.GetComponent<Slider>().value = TotalGamesPlayedSlider.GetComponent<Slider>().maxValue;
+
+
+}
 
     public void UpdateDivision()
     {
@@ -165,6 +200,9 @@ public class DataCompiler : MonoBehaviour {
         int pointsForWinAway    = int.Parse(PointsForWinAwayInput.GetComponent<InputField>().text);
         int pointsForDrawHome   = int.Parse(PointsForDrawHomeInput.GetComponent<InputField>().text);
         int pointsForDrawAway   = int.Parse(PointsForDrawAwayInput.GetComponent<InputField>().text);
+        int pointsForRed        = int.Parse(PointsForRedInput.GetComponent<InputField>().text);
+        int pointsForYellow     = int.Parse(PointsForYellowInput.GetComponent<InputField>().text);
+
         bool scoringFirstHalf   = CheckboxScoringFirstHalf.GetComponent<Toggle>().isOn;
         bool scoringSecondHalf  = CheckboxScoringSecondHalf.GetComponent<Toggle>().isOn;
         bool woodwork           = CheckboxWoodwork.GetComponent<Toggle>().isOn;
@@ -177,12 +215,8 @@ public class DataCompiler : MonoBehaviour {
         int totalWoodwork   = 0;
         int totalFouls      = 0;
 
-        //int count = CalculateGameCount(fixtures.Count);
         // get it from value of slider, not text box
-        string strTotalGamesAllowed = TotalGamesPlayedInput.GetComponentInChildren<Text>().text;
-        int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;    //int.Parse(strTotalGamesAllowed);
-
-        Debug.Log(totalGamesAllowed);
+        int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;   
 
         // create map of teams with points collected as value    
         foreach (Fixture fixture in fixtures)
@@ -324,6 +358,12 @@ public class DataCompiler : MonoBehaviour {
 
             map[fixture.AwayTeam].goalsFor      = map[fixture.AwayTeam].goalsFor + totalAwayGoals;
             map[fixture.AwayTeam].goalsAgainst  = map[fixture.AwayTeam].goalsAgainst + totalHomeGoals;
+
+            // points for yellow/red cards
+            map[fixture.HomeTeam].pointsAltered = map[fixture.HomeTeam].pointsAltered + (fixture.HY * pointsForYellow);
+            map[fixture.AwayTeam].pointsAltered = map[fixture.AwayTeam].pointsAltered + (fixture.AY * pointsForYellow);
+            map[fixture.HomeTeam].pointsAltered = map[fixture.HomeTeam].pointsAltered + (fixture.HR * pointsForRed);
+            map[fixture.AwayTeam].pointsAltered = map[fixture.AwayTeam].pointsAltered + (fixture.AR * pointsForRed);
 
             if (totalHomeGoals > totalAwayGoals)
             {
@@ -618,31 +658,9 @@ public class DataCompiler : MonoBehaviour {
         }
     }
 
-    // calculate how many games per team from total amount of fixtures
-    int CalculateGameCount(int totalfixtureCount)
-    {
-        // each team plys twice so halve fixtures so we can work out amount of teams
-        totalfixtureCount /= 2;
 
-        int nGuess = 0;
-        int loop = 4;
-        while(nGuess != totalfixtureCount)
-        {
-            nGuess = Factorial(loop) / (2 * Factorial(loop - 2));
-            loop++;
-        }
-        return (nGuess-1)*2; // play everyone twice
-    }
 
-    int Factorial(int value)
-    {
-        int total = 1;
-        for(int i = 2; i <= value; i++)
-        {
-            total *= i;
-        }
-        return total;
-    }
+
     
 }
 

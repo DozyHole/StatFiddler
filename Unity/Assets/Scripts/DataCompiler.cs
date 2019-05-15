@@ -94,6 +94,8 @@ public class DataCompiler : MonoBehaviour {
     public Transform[] TableGoalsFor;
     public Transform[] TableGoalsAgainst;
     public Transform[] TableDiff;
+    public Transform txtDivision;
+    public Transform txtYear;
 
     public Transform SliderTableOffset;
 
@@ -104,10 +106,6 @@ public class DataCompiler : MonoBehaviour {
     // Use this for initialization
     void Start () {
         map         = new Dictionary<string, TeamData>();
-        // listAltered = new List<KeyValuePair<string, TeamData>>();
-        // string sql  = "SELECT * FROM E0";
-        //fixtures = dbManager.Query<Fixture>(sql);
-        //CompileTable();
         UpdateDivision();
     }
 	
@@ -156,8 +154,6 @@ public class DataCompiler : MonoBehaviour {
         int year = DropDownYear.GetComponent<Dropdown>().value;
         dbManagerCurr = dbManagerArr[year];
 
-
-
         // EN
         int div = DropDownDivision.GetComponent<Dropdown>().value;
         string strDiv = "E0";
@@ -188,6 +184,8 @@ public class DataCompiler : MonoBehaviour {
         TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * 2;
         TotalGamesPlayedSlider.GetComponent<Slider>().value = (totalTeams - 1) * 2;
 
+        txtYear.GetComponent<Text>().text = DropDownYear.GetComponent<Dropdown>().options[year].text;
+        txtDivision.GetComponent<Text>().text = DropDownDivision.GetComponent<Dropdown>().options[div].text;
         // do again in case we are dont have all games in data (part way through season)
         CompileTable();
     }

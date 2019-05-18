@@ -84,7 +84,7 @@ public class DataCompiler : MonoBehaviour {
     public Transform PointsForRedSlider;
     public Transform PointsForYellowSlider;
 
-    // Share Canvas View
+    // Share Canvas View - depricated
     public Transform[] TableTeams;
     public Transform[] TablePlayed;
     public Transform[] TablePoints;
@@ -94,6 +94,12 @@ public class DataCompiler : MonoBehaviour {
     public Transform[] TableGoalsFor;
     public Transform[] TableGoalsAgainst;
     public Transform[] TableDiff;
+
+    // new table
+    public Transform[] TableRows;
+    public Transform[] ChangesText;
+
+
     public Transform txtDivision;
     public Transform txtYear;
 
@@ -190,6 +196,49 @@ public class DataCompiler : MonoBehaviour {
         CompileTable();
     }
 
+    void DoChanges(int pointsForWinHome, int pointsForWinAway, int pointsForDrawHome, int pointsForDrawAway, int pointsForRed,
+        int pointsForYellow, bool scoringFirstHalf, bool scoringSecondHalf, bool woodwork, bool onTarget, bool shot, bool foul)
+    {
+        // list of rule changes user has made
+        ArrayList arrChanges = new ArrayList();
+        if (pointsForWinHome != 3)
+            arrChanges.Add("*" + pointsForWinHome + " Points for home win");
+        if (pointsForWinAway != 3)
+            arrChanges.Add("*" + pointsForWinAway + " Points for away win");
+        if (pointsForDrawHome != 1)
+            arrChanges.Add("*" + pointsForWinHome + " Points for home draw");
+        if (pointsForDrawAway != 1)
+            arrChanges.Add("*" + pointsForWinAway + " Points for away draw");
+        if (pointsForRed != 0)
+            arrChanges.Add("*" + pointsForRed + " Points for red card");
+        if (pointsForYellow != 0)
+            arrChanges.Add("*" + pointsForYellow + " Points for yellow card");
+        if (scoringFirstHalf && !scoringSecondHalf)
+            arrChanges.Add("*First halves only");
+        if (scoringSecondHalf && !scoringFirstHalf)
+            arrChanges.Add("*Second halves only");
+        if (woodwork)
+            arrChanges.Add("*Goal for hitting woodwork");
+        if (onTarget)
+            arrChanges.Add("*Goal for shot on target");
+        if (shot)
+            arrChanges.Add("*Goal for shot");
+        if (foul)
+            arrChanges.Add("*Goal for foul");
+
+        int index = 0;
+        foreach(Transform t in ChangesText)
+        {
+            Text txt = t.GetComponent<Text>();
+            txt.text = "";
+            if(arrChanges.Count > index)
+            {
+                txt.text = (string)arrChanges[index];
+            }
+            index++;
+        }
+    }
+
     public void CompileTable()
     {
         map.Clear();
@@ -214,7 +263,11 @@ public class DataCompiler : MonoBehaviour {
         int totalFouls      = 0;
 
         // get it from value of slider, not text box
-        int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;   
+        int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;
+
+        bool fixtureSkipped = false;
+        DoChanges(pointsForWinHome, pointsForWinAway, pointsForDrawHome, pointsForDrawAway, pointsForRed,
+            pointsForYellow, scoringFirstHalf, scoringSecondHalf, woodwork, onTarget, shot, foul);
 
         // create map of teams with points collected as value    
         foreach (Fixture fixture in fixtures)
@@ -241,11 +294,13 @@ public class DataCompiler : MonoBehaviour {
             if(map[fixture.HomeTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture
+                fixtureSkipped = true;
                 continue;
             }
             if (map[fixture.AwayTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture
+                fixtureSkipped = true;
                 continue;
             }
 
@@ -497,8 +552,8 @@ public class DataCompiler : MonoBehaviour {
                             if (txtValue.transform.childCount > 0)
                                 transChildDiff = txtValue.transform.GetChild(0);
 
-                            Text txtValueDiff = null; 
-                            if(transChildDiff)
+                            Text txtValueDiff = null;
+                            if (transChildDiff)
                                 txtValueDiff = transChildDiff.GetComponentInChildren<Text>();
 
                             if (txtValueDiff)
@@ -535,8 +590,17 @@ public class DataCompiler : MonoBehaviour {
                             }
                         }
                         else
+                        {
                             txtValue.text = "";
 
+                            Transform transChildDiff = null;
+                            if (txtValue.transform.childCount > 0)
+                                transChildDiff = txtValue.transform.GetChild(0);
+                            Text txtValueDiff = null;
+                            if (transChildDiff)
+                                txtValueDiff = transChildDiff.GetComponentInChildren<Text>();
+                            txtValueDiff.text = "";
+                        }
 
                     }
                 }
@@ -597,44 +661,47 @@ public class DataCompiler : MonoBehaviour {
             string keyTeam = kv.Key;
             TeamData valueData = kv.Value;
 
-            if (TableTeams.Length > index)
+            if (TableRows.Length > index)
             {
                 // we have a text item in array
-                // name
-                Text txt = TableTeams[index].GetComponent<Text>();
-                txt.text = keyTeam;
-                txt.text = (valueData.positionAltered+1) + "." + txt.text;
+                // position
+                Text txt = TableRows[index].FindChild("Panel_position").FindChild("Text").GetComponent<Text>();
+                txt.text = (valueData.positionAltered + 1).ToString();
 
-                // played
-                txt = TablePlayed[index].GetComponent<Text>();
+                // name
+                txt = TableRows[index].FindChild("Panel_name").FindChild("Text").GetComponent<Text>();
+                txt.text = " " + keyTeam;
+
+                // played      
+                txt = TableRows[index].FindChild("Panel_played").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.played.ToString();
 
                 // won
-                txt = TableWon[index].GetComponent<Text>();
+                txt = TableRows[index].FindChild("Panel_won").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.won.ToString();
 
                 // lost
-                txt = TableLost[index].GetComponent<Text>();
+                txt = TableRows[index].FindChild("Panel_lost").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.lost.ToString();
 
                 // drawn
-                txt = TableDrawn[index].GetComponent<Text>();
+                txt = TableRows[index].FindChild("Panel_drawn").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.drawn.ToString();
 
                 // goals for
-                txt = TableGoalsFor[index].GetComponent<Text>();
+                txt = TableRows[index].FindChild("Panel_goals_for").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.goalsFor.ToString();
 
-                // goals for
-                txt = TableGoalsAgainst[index].GetComponent<Text>();
+                // goals against
+                txt = TableRows[index].FindChild("Panel_goals_against").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.goalsAgainst.ToString();
 
                 // points
-                txt = TablePoints[index].GetComponent<Text>();
+                txt = TableRows[index].FindChild("Panel_points").FindChild("Text").GetComponent<Text>();
                 txt.text = valueData.pointsAltered.ToString();
 
                 // diff
-                txt = TableDiff[index].GetComponent<Text>();
+                txt = TableRows[index].FindChild("Panel_diff").FindChild("Text").GetComponent<Text>();
                 txt.color = Color.white;
                 txt.text = valueData.diff.ToString();
                 if (valueData.diff > 0)
@@ -658,8 +725,100 @@ public class DataCompiler : MonoBehaviour {
 
 
 
+    //public void PopulateTableShare()
+    //{
+    //    int count = listAltered.Count;
+    //    int offset = 0;// count - 10;
+    //    int index = 0;
 
-    
+    //    int sliderValue = (int)SliderTableOffset.GetComponent<Slider>().value;
+    //    switch (sliderValue)
+    //    {
+    //        case 0:
+    //            offset = 0;
+    //            break;
+    //        case 1:
+    //            offset = (count / 2) - 5;
+    //            break;
+    //        case 2:
+    //            offset = count - 10;
+    //            break;
+    //    }
+
+
+    //    foreach (KeyValuePair<string, TeamData> kv in listAltered)
+    //    {
+    //        // we can offset table
+    //        if (index < offset)
+    //        {
+    //            // dont start yet
+    //            offset--;
+    //            continue;
+    //        }
+    //        string keyTeam = kv.Key;
+    //        TeamData valueData = kv.Value;
+
+    //        if (TableTeams.Length > index)
+    //        {
+    //            // we have a text item in array
+    //            // name
+    //            Text txt = TableTeams[index].GetComponent<Text>();
+    //            txt.text = keyTeam;
+    //            txt.text = (valueData.positionAltered + 1) + "." + txt.text;
+
+    //            // played
+    //            txt = TablePlayed[index].GetComponent<Text>();
+    //            txt.text = valueData.played.ToString();
+
+    //            // won
+    //            txt = TableWon[index].GetComponent<Text>();
+    //            txt.text = valueData.won.ToString();
+
+    //            // lost
+    //            txt = TableLost[index].GetComponent<Text>();
+    //            txt.text = valueData.lost.ToString();
+
+    //            // drawn
+    //            txt = TableDrawn[index].GetComponent<Text>();
+    //            txt.text = valueData.drawn.ToString();
+
+    //            // goals for
+    //            txt = TableGoalsFor[index].GetComponent<Text>();
+    //            txt.text = valueData.goalsFor.ToString();
+
+    //            // goals for
+    //            txt = TableGoalsAgainst[index].GetComponent<Text>();
+    //            txt.text = valueData.goalsAgainst.ToString();
+
+    //            // points
+    //            txt = TablePoints[index].GetComponent<Text>();
+    //            txt.text = valueData.pointsAltered.ToString();
+
+    //            // diff
+    //            txt = TableDiff[index].GetComponent<Text>();
+    //            txt.color = Color.white;
+    //            txt.text = valueData.diff.ToString();
+    //            if (valueData.diff > 0)
+    //            {
+    //                txt.text = "+" + txt.text;
+    //                txt.color = Color.green;
+    //            }
+    //            if (valueData.diff == 0)
+    //            {
+    //                txt.text = "";
+    //                txt.color = Color.green;
+    //            }
+    //            if (valueData.diff < 0)
+    //            {
+    //                txt.color = Color.red;
+    //            }
+    //        }
+    //        index++;
+    //    }
+    //}
+
+
+
 }
 
 

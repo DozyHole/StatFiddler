@@ -56,6 +56,8 @@ public class DataCompiler : MonoBehaviour {
 
     public SimpleSQL.SimpleSQLManager dbManager;
     public SimpleSQL.SimpleSQLManager[] dbManagerArr;
+    public SimpleSQL.SimpleSQLManager[] dbManagerArrItaly;
+    public SimpleSQL.SimpleSQLManager[] dbManagerArrSpain;
     SimpleSQL.SimpleSQLManager dbManagerCurr;
 
     // Main Canvas View
@@ -66,6 +68,7 @@ public class DataCompiler : MonoBehaviour {
     public Transform PointsForDrawAwayInput;
     public Transform PointsForRedInput;
     public Transform PointsForYellowInput;
+    public Transform DropDownCountry;
     public Transform DropDownDivision;
     public Transform DropDownYear;
     public Transform CheckboxScoringFirstHalf;
@@ -129,6 +132,16 @@ public class DataCompiler : MonoBehaviour {
             m.Close();
             m.Dispose();
         }
+        foreach (SimpleSQL.SimpleSQLManager m in dbManagerArrItaly)
+        {
+            m.Close();
+            m.Dispose();
+        }
+        foreach (SimpleSQL.SimpleSQLManager m in dbManagerArrSpain)
+        {
+            m.Close();
+            m.Dispose();
+        }
 
     }
 
@@ -152,35 +165,118 @@ public class DataCompiler : MonoBehaviour {
         TotalGamesPlayedSlider.GetComponent<Slider>().value = TotalGamesPlayedSlider.GetComponent<Slider>().maxValue;
 
 
-}
+    }
+
+    bool updateDivisionEnabled = true;
+
+    public void UpdateCountry()
+    {
+        updateDivisionEnabled = false;
+
+        int country = DropDownCountry.GetComponent<Dropdown>().value;
+
+        List<string> optionsDiv = new List<string>();
+        List<string> optionsYear = new List<string>();
+
+        if (country == 0)
+        {
+            // EN 
+            dbManagerCurr = dbManagerArr[0];
+            optionsDiv.Add("PREMIER LEAGUE");
+            optionsDiv.Add("CHAMPIONSHIP");
+            optionsDiv.Add("DIVISION 1");
+            optionsDiv.Add("DIVISION 2");
+            optionsDiv.Add("CONFERENCE");
+
+            optionsYear.Add("2018-2019");
+            optionsYear.Add("2017-2018");
+
+        }
+        if (country == 1)
+        {
+            // IT
+            dbManagerCurr = dbManagerArrItaly[0];
+            optionsDiv.Add("SERIE A");
+            optionsDiv.Add("SERIE B");
+
+            optionsYear.Add("2018-2019");
+        }
+
+        DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+        DropDownYear.GetComponent<Dropdown>().ClearOptions();
+
+        DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
+        DropDownYear.GetComponent<Dropdown>().AddOptions(optionsYear);
+
+        DropDownYear.GetComponent<Dropdown>().value = 0;
+        DropDownDivision.GetComponent<Dropdown>().value = 0;
+
+        updateDivisionEnabled = true;
+
+        // just do once at the end
+        UpdateDivision();
+
+    }
 
     public void UpdateDivision()
     {
-        // Database - get country/year
-        int year = DropDownYear.GetComponent<Dropdown>().value;
-        dbManagerCurr = dbManagerArr[year];
+        if (!updateDivisionEnabled)
+            return;
 
-        // EN
-        int div = DropDownDivision.GetComponent<Dropdown>().value;
-        string strDiv = "E0";
-        switch(div)
+        Debug.Log("Updating Division");
+        // Database - get country/year
+        int country = DropDownCountry.GetComponent<Dropdown>().value;
+        int year = DropDownYear.GetComponent<Dropdown>().value;
+        string strDiv = "";
+        int div = 0;
+
+        Debug.Log("year " + year);
+        Debug.Log("country " + country);
+
+        if (country == 0)
         {
-            case 0:
-                strDiv = "E0";
-                break;
-            case 1:
-                strDiv = "E1";
-                break;
-            case 2:
-                strDiv = "E2";
-                break;
-            case 3:
-                strDiv = "E3";
-                break;
-            case 4:
-                strDiv = "EC";
-                break;
+            // EN
+            // years = 3
+            // divisions = 5
+            dbManagerCurr = dbManagerArr[year];
+            div = DropDownDivision.GetComponent<Dropdown>().value;
+            strDiv = "E0";
+            switch (div)
+            {
+                case 0:
+                    strDiv = "E0";
+                    break;
+                case 1:
+                    strDiv = "E1";
+                    break;
+                case 2:
+                    strDiv = "E2";
+                    break;
+                case 3:
+                    strDiv = "E3";
+                    break;
+                case 4:
+                    strDiv = "EC";
+                    break;
+            }
         }
+        else if (country == 1)
+        {
+            // Italy
+            dbManagerCurr = dbManagerArrItaly[year];
+            div = DropDownDivision.GetComponent<Dropdown>().value;
+            strDiv = "I1";
+            switch (div)
+            {
+                case 0:
+                    strDiv = "I1";
+                    break;
+                case 1:
+                    strDiv = "I2";
+                    break;
+            }
+        }
+
         string sql = "SELECT * FROM " + strDiv;
         fixtures = dbManagerCurr.Query<Fixture>(sql);
         CompileTable();
@@ -202,29 +298,29 @@ public class DataCompiler : MonoBehaviour {
         // list of rule changes user has made
         ArrayList arrChanges = new ArrayList();
         if (pointsForWinHome != 3)
-            arrChanges.Add("*" + pointsForWinHome + " Points for home win");
+            arrChanges.Add("* " + pointsForWinHome + " Points for home win");
         if (pointsForWinAway != 3)
-            arrChanges.Add("*" + pointsForWinAway + " Points for away win");
+            arrChanges.Add("* " + pointsForWinAway + " Points for away win");
         if (pointsForDrawHome != 1)
-            arrChanges.Add("*" + pointsForWinHome + " Points for home draw");
+            arrChanges.Add("* " + pointsForWinHome + " Points for home draw");
         if (pointsForDrawAway != 1)
-            arrChanges.Add("*" + pointsForWinAway + " Points for away draw");
+            arrChanges.Add("* " + pointsForWinAway + " Points for away draw");
         if (pointsForRed != 0)
-            arrChanges.Add("*" + pointsForRed + " Points for red card");
+            arrChanges.Add("* " + pointsForRed + " Points for red card");
         if (pointsForYellow != 0)
-            arrChanges.Add("*" + pointsForYellow + " Points for yellow card");
+            arrChanges.Add("* " + pointsForYellow + " Points for yellow card");
         if (scoringFirstHalf && !scoringSecondHalf)
-            arrChanges.Add("*First halves only");
+            arrChanges.Add("* First halves only");
         if (scoringSecondHalf && !scoringFirstHalf)
-            arrChanges.Add("*Second halves only");
+            arrChanges.Add("* Second halves only");
         if (woodwork)
-            arrChanges.Add("*Goal for hitting woodwork");
+            arrChanges.Add("* Goal for hitting woodwork");
         if (onTarget)
-            arrChanges.Add("*Goal for shot on target");
+            arrChanges.Add("* Goal for shot on target");
         if (shot)
-            arrChanges.Add("*Goal for shot");
+            arrChanges.Add("* Goal for shot");
         if (foul)
-            arrChanges.Add("*Goal for foul");
+            arrChanges.Add("* Goal for foul");
 
         int index = 0;
         foreach(Transform t in ChangesText)

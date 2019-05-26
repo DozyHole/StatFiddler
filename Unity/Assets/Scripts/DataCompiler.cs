@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 using SimpleSQL;
 using System.Collections.Generic;
@@ -112,8 +113,20 @@ public class DataCompiler : MonoBehaviour {
     Dictionary<string, TeamData> map;
     List<KeyValuePair<string, TeamData>> listAltered;
 
+    int SortDataBaseManagers(SimpleSQLManager a, SimpleSQLManager b)
+    {
+        return String.Compare(b.databaseFile.name, a.databaseFile.name);
+    }
+
     // Use this for initialization
     void Start () {
+        // dort so we can add new databases to array and always have most recent first in array
+        Array.Sort<SimpleSQLManager>(dbManagerArr,      SortDataBaseManagers);
+        Array.Sort<SimpleSQLManager>(dbManagerArrItaly, SortDataBaseManagers);
+        Array.Sort<SimpleSQLManager>(dbManagerArrSpain, SortDataBaseManagers);
+
+        var sorted = dbManagerArr.OrderBy(item => item.databaseFile.name); 
+
         map         = new Dictionary<string, TeamData>();
         UpdateDivision();
     }
@@ -288,6 +301,9 @@ public class DataCompiler : MonoBehaviour {
 
         txtYear.GetComponent<Text>().text = DropDownYear.GetComponent<Dropdown>().options[year].text;
         txtDivision.GetComponent<Text>().text = DropDownDivision.GetComponent<Dropdown>().options[div].text;
+
+        TextAsset asset = new TextAsset();
+        dbManager.databaseFile = asset; 
         // do again in case we are dont have all games in data (part way through season)
         CompileTable();
     }

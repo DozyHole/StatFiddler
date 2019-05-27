@@ -777,43 +777,43 @@ public class DataCompiler : MonoBehaviour {
             {
                 // we have a text item in array
                 // position
-                Text txt = TableRows[index].FindChild("Panel_position").FindChild("Text").GetComponent<Text>();
+                Text txt = TableRows[index].Find("Panel_position").Find("Text").GetComponent<Text>();
                 txt.text = (valueData.positionAltered + 1).ToString();
 
                 // name
-                txt = TableRows[index].FindChild("Panel_name").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_name").Find("Text").GetComponent<Text>();
                 txt.text = " " + keyTeam;
 
                 // played      
-                txt = TableRows[index].FindChild("Panel_played").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_played").Find("Text").GetComponent<Text>();
                 txt.text = valueData.played.ToString();
 
                 // won
-                txt = TableRows[index].FindChild("Panel_won").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_won").Find("Text").GetComponent<Text>();
                 txt.text = valueData.won.ToString();
 
                 // lost
-                txt = TableRows[index].FindChild("Panel_lost").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_lost").Find("Text").GetComponent<Text>();
                 txt.text = valueData.lost.ToString();
 
                 // drawn
-                txt = TableRows[index].FindChild("Panel_drawn").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_drawn").Find("Text").GetComponent<Text>();
                 txt.text = valueData.drawn.ToString();
 
                 // goals for
-                txt = TableRows[index].FindChild("Panel_goals_for").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_goals_for").Find("Text").GetComponent<Text>();
                 txt.text = valueData.goalsFor.ToString();
 
                 // goals against
-                txt = TableRows[index].FindChild("Panel_goals_against").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_goals_against").Find("Text").GetComponent<Text>();
                 txt.text = valueData.goalsAgainst.ToString();
 
                 // points
-                txt = TableRows[index].FindChild("Panel_points").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_points").Find("Text").GetComponent<Text>();
                 txt.text = valueData.pointsAltered.ToString();
 
                 // diff
-                txt = TableRows[index].FindChild("Panel_diff").FindChild("Text").GetComponent<Text>();
+                txt = TableRows[index].Find("Panel_diff").Find("Text").GetComponent<Text>();
                 txt.color = Color.white;
                 txt.text = valueData.diff.ToString();
                 if (valueData.diff > 0)

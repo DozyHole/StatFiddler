@@ -13,8 +13,10 @@ public class Main : MonoBehaviour {
     public RectTransform BottomContainer2;
     public Transform TxtDebug;
 
-    public Transform ButtonSave;
+    public Transform SliderTable;
     public Transform PanelMessage;
+    public Transform PanelBottom;
+    public Transform PanelPromote;
     public Transform TxtHeading;
     public Transform TxtMessage;
 
@@ -37,9 +39,24 @@ public class Main : MonoBehaviour {
         RequestBanner();
     }
 
+    void HideBeforeSceenshot()
+    {
+        PanelBottom.gameObject.SetActive(false);
+        SliderTable.gameObject.SetActive(false);
+        PanelPromote.gameObject.SetActive(true);
+    }
+
+    void ShowAfterScreenShot()
+    {
+        PanelBottom.gameObject.SetActive(true);
+        SliderTable.gameObject.SetActive(true);
+        PanelPromote.gameObject.SetActive(false);
+    }
+
     public void ScreenShot()
     {
         // Take a screenshot and save it to Gallery/Photos
+        HideBeforeSceenshot();
         StartCoroutine(TakeScreenshotAndSave());
     }
 
@@ -83,6 +100,7 @@ public class Main : MonoBehaviour {
         }
 
         PanelMessage.gameObject.SetActive(true);
+        ShowAfterScreenShot();
         StartCoroutine(HideMessage(4.5f));
     }
 
@@ -90,7 +108,6 @@ public class Main : MonoBehaviour {
     {
         yield return new WaitForSeconds(t);
         PanelMessage.gameObject.SetActive(false);
-        ButtonSave.gameObject.SetActive(true);
     }
 
     public static float adHeight()

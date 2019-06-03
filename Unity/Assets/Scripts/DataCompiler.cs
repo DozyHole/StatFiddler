@@ -230,7 +230,7 @@ public class DataCompiler : MonoBehaviour {
         UpdateDivision();
 
     }
-
+    string strDiv = "";
     public void UpdateDivision()
     {
         if (!updateDivisionEnabled)
@@ -240,7 +240,7 @@ public class DataCompiler : MonoBehaviour {
         // Database - get country/year
         int country = DropDownCountry.GetComponent<Dropdown>().value;
         int year = DropDownYear.GetComponent<Dropdown>().value;
-        string strDiv = "";
+       // string strDiv = "";
         int div = 0;
 
         Debug.Log("year " + year);
@@ -292,7 +292,10 @@ public class DataCompiler : MonoBehaviour {
 
         string sql = "SELECT * FROM " + strDiv;
         fixtures = dbManagerCurr.Query<Fixture>(sql);
+        UpdateDataReal();
         CompileTable();
+       
+
         // set max games
         // total games per team
         int totalTeams = map.Count;
@@ -303,8 +306,9 @@ public class DataCompiler : MonoBehaviour {
         txtDivision.GetComponent<Text>().text = DropDownDivision.GetComponent<Dropdown>().options[div].text;
 
         TextAsset asset = new TextAsset();
-        dbManager.databaseFile = asset; 
+        dbManager.databaseFile = asset;
         // do again in case we are dont have all games in data (part way through season)
+        UpdateDataReal();
         CompileTable();
     }
 
@@ -351,10 +355,124 @@ public class DataCompiler : MonoBehaviour {
         }
     }
 
-    public void CompileTable()
+    void AddTeamsToMap()
     {
         map.Clear();
+        foreach (Fixture fixture in fixtures)
+        {
+            if (!map.ContainsKey(fixture.HomeTeam))
+            {
+                TeamData data = new TeamData();
+                data.position = 0;
+                data.points = 0;
+                data.pointsAltered = 0;
+                data.name = fixture.HomeTeam;
+                map.Add(fixture.HomeTeam, data);
+            }
+            if (!map.ContainsKey(fixture.AwayTeam))
+            {
+                TeamData data = new TeamData();
+                data.position = 0;
+                data.points = 0;
+                data.pointsAltered = 0;
+                data.name = fixture.AwayTeam;
+                map.Add(fixture.AwayTeam, data);
+            }
+        }
+    }
 
+    void DetermineMarketsAvailable()
+    {
+        // if these remain 0 after all fixtures then we know they are either not present in database or irrelevant anyway do we should disable the ui
+        int totalShots = 0;
+        int totalOnTarget = 0;
+        int totalWoodwork = 0;
+        int totalFouls = 0;
+        foreach (Fixture fixture in fixtures)
+        {
+            totalShots += fixture.HS + fixture.AS;
+            totalOnTarget += fixture.HST + fixture.AST;
+            totalWoodwork += fixture.HHW + fixture.AHW;
+            totalFouls += fixture.HF + fixture.AF;
+        }
+        // disable ui if not used
+        CheckboxWoodwork.GetComponent<Toggle>().interactable = true;
+        CheckboxShot.GetComponent<Toggle>().interactable = true;
+        CheckboxShotOnTarget.GetComponent<Toggle>().interactable = true;
+        CheckboxFoul.GetComponent<Toggle>().interactable = true;
+        if (totalWoodwork == 0)
+        {
+            CheckboxWoodwork.GetComponent<Toggle>().interactable = false;
+        }
+        if (totalShots == 0)
+        {
+            CheckboxShot.GetComponent<Toggle>().interactable = false;
+        }
+        if (totalOnTarget == 0)
+        {
+            CheckboxShotOnTarget.GetComponent<Toggle>().interactable = false;
+        }
+        if (totalFouls == 0)
+        {
+            CheckboxFoul.GetComponent<Toggle>().interactable = false;
+        }
+    }
+
+    void SetRealData()
+    {
+        foreach (Fixture fixture in fixtures)
+        {
+            //** actual results **
+            if (fixture.FTHG > fixture.FTAG)
+            {
+                // home win
+                map[fixture.HomeTeam].points = map[fixture.HomeTeam].points + 3;
+            }
+            else if (fixture.FTHG < fixture.FTAG)
+            {
+                // away win
+                map[fixture.AwayTeam].points = map[fixture.AwayTeam].points + 3;
+            }
+            else
+            {
+                // draw
+                map[fixture.HomeTeam].points = map[fixture.HomeTeam].points + 1;
+                map[fixture.AwayTeam].points = map[fixture.AwayTeam].points + 1;
+            }
+        }
+    }
+
+    void SortAndAssignReal()
+    {
+        // sort by value
+        List<KeyValuePair<string, TeamData>> list = map.ToList();
+        list.Sort(
+            delegate (KeyValuePair<string, TeamData> pair1,
+            KeyValuePair<string, TeamData> pair2)
+            {
+                if (pair1.Value == pair2.Value)
+                {
+                    // complex
+                    // compare goal difference
+                    // if same compare goals for
+                    // if same compare head to head games
+                }
+                return pair2.Value.points.CompareTo(pair1.Value.points);
+            }
+        );
+        AssignPositionsReal(list);
+    }
+
+    void UpdateDataReal()
+    {
+        AddTeamsToMap();
+        DetermineMarketsAvailable();
+        SetRealData();
+        SortAndAssignReal();
+    }
+
+    public void CompileTable()
+    {
         int pointsForWinHome    = int.Parse(PointsForWinHomeInput.GetComponent<InputField>().text);
         int pointsForWinAway    = int.Parse(PointsForWinAwayInput.GetComponent<InputField>().text);
         int pointsForDrawHome   = int.Parse(PointsForDrawHomeInput.GetComponent<InputField>().text);
@@ -368,58 +486,93 @@ public class DataCompiler : MonoBehaviour {
         bool onTarget           = CheckboxShotOnTarget.GetComponent<Toggle>().isOn;
         bool shot               = CheckboxShot.GetComponent<Toggle>().isOn;
         bool foul               = CheckboxFoul.GetComponent<Toggle>().isOn;
-        // if these remain 0 after all fixtures then we know they are wither not present in database or irrelevant anyway do we should disable the ui
-        int totalShots      = 0;
-        int totalOnTarget   = 0;
-        int totalWoodwork   = 0;
-        int totalFouls      = 0;
 
         // get it from value of slider, not text box
         int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;
 
-        bool fixtureSkipped = false;
+        // bool fixtureSkipped = false;
         DoChanges(pointsForWinHome, pointsForWinAway, pointsForDrawHome, pointsForDrawAway, pointsForRed,
             pointsForYellow, scoringFirstHalf, scoringSecondHalf, woodwork, onTarget, shot, foul);
+     
+        // if swap defense/goalie
+        // go through fixtures
+        // swap records
+
+        bool swapDefense = true;
+        string TeamSwapA = "Liverpool";
+        string TeamSwapB = "Chelsea";
+        List<Fixture> fixturesTemp = fixtures;
+
+        /*
+        if (swapDefense)
+        {
+            foreach (Fixture fixture in fixturesTemp)
+            {
+                if(fixture.HomeTeam == TeamSwapA)
+                {
+                    // get fixture of TeamSwapB vs fixture.AwayTeam 
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='Chelsea' AND AwayTeam='Liverpool'";
+                    List<Fixture> fix;
+                    fix = dbManagerCurr.Query<Fixture>(sql);
+                    fixture.FTHG = 5;
+
+                    bool stop = true;
+                }
+                else if (fixture.HomeTeam == TeamSwapB)
+                {
+                    // get fixture of TeamSwapA vs fixture.AwayTeam 
+                }
+                else if (fixture.AwayTeam == TeamSwapA)
+                {
+                    // get fixture of TeamSwapB vs fixture.HomeTeam 
+                }
+                else if (fixture.AwayTeam == TeamSwapB)
+                {
+                    // get fixture of TeamSwapA vs fixture.HomeTeam 
+                }
+                // switch records of two fixtures
+
+            }
+        }
+        */
+
+        //UpdateDataReal();
+
+        foreach (Fixture fixture in fixturesTemp)
+        {
+            // TODO - reset all altered data to 0
+
+            map[fixture.HomeTeam].played = 0;
+            map[fixture.HomeTeam].pointsAltered = 0;
+           // map[fixture.HomeTeam]. = 0;
+
+            map[fixture.AwayTeam].played = 0;
+            map[fixture.AwayTeam].pointsAltered = 0;
+        }
+
 
         // create map of teams with points collected as value    
-        foreach (Fixture fixture in fixtures)
+        foreach (Fixture fixture in fixturesTemp)
         {
-
-            if (!map.ContainsKey(fixture.HomeTeam)){
-                TeamData data = new TeamData();
-                data.position       = 0;
-                data.points         = 0;
-                data.pointsAltered  = 0;
-                data.name           = fixture.HomeTeam;
-                map.Add(fixture.HomeTeam, data);
-            }
-            if (!map.ContainsKey(fixture.AwayTeam)){
-                TeamData data = new TeamData();
-                data.position       = 0;
-                data.points         = 0;
-                data.pointsAltered  = 0;
-                data.name           = fixture.AwayTeam;
-                map.Add(fixture.AwayTeam, data);
-            }
-
-
             if(map[fixture.HomeTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture
-                fixtureSkipped = true;
+                //fixtureSkipped = true;
+
                 continue;
             }
             if (map[fixture.AwayTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture
-                fixtureSkipped = true;
+                //fixtureSkipped = true;
+
                 continue;
             }
 
-            totalShots += fixture.HS + fixture.AS;
-            totalOnTarget += fixture.HST + fixture.AST;
-            totalWoodwork += fixture.HHW + fixture.AHW;
-            totalFouls += fixture.HF + fixture.AF;
+            //totalShots += fixture.HS + fixture.AS;
+            //totalOnTarget += fixture.HST + fixture.AST;
+            //totalWoodwork += fixture.HHW + fixture.AHW;
+            //totalFouls += fixture.HF + fixture.AF;
 
             //bool useGoals = true;
             //if (!useGoals)
@@ -495,27 +648,7 @@ public class DataCompiler : MonoBehaviour {
                 totalAwayGoals += fixture.AF; // fouls
             }
 
-
-            //** actual results **
-            if (fixture.FTHG > fixture.FTAG)
-            {
-                // home win
-                map[fixture.HomeTeam].points = map[fixture.HomeTeam].points + 3;
-            }
-            else if (fixture.FTHG < fixture.FTAG)
-            {
-                // away win
-                map[fixture.AwayTeam].points = map[fixture.AwayTeam].points + 3;
-            }
-            else
-            {
-                // draw
-                map[fixture.HomeTeam].points = map[fixture.HomeTeam].points + 1;
-                map[fixture.AwayTeam].points = map[fixture.AwayTeam].points + 1;
-            }
-
             //** altered results based on selections **
-
             map[fixture.HomeTeam].played++;
             map[fixture.AwayTeam].played++;
             map[fixture.HomeTeam].goalsFor      = map[fixture.HomeTeam].goalsFor + totalHomeGoals;
@@ -563,45 +696,6 @@ public class DataCompiler : MonoBehaviour {
         //int totalTeams = map.Count;
         //TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * 2;
 
-
-        // disable ui if not used
-        CheckboxWoodwork.GetComponent<Toggle>().interactable = true;
-        CheckboxShot.GetComponent<Toggle>().interactable = true;
-        CheckboxShotOnTarget.GetComponent<Toggle>().interactable = true;
-        CheckboxFoul.GetComponent<Toggle>().interactable = true;
-        if (totalWoodwork == 0)
-        {
-            CheckboxWoodwork.GetComponent<Toggle>().interactable = false;
-        }
-        if(totalShots == 0)
-        {
-            CheckboxShot.GetComponent<Toggle>().interactable = false;
-        }
-        if (totalOnTarget == 0)
-        {
-            CheckboxShotOnTarget.GetComponent<Toggle>().interactable = false;
-        }
-        if (totalFouls == 0)
-        {
-            CheckboxFoul.GetComponent<Toggle>().interactable = false;
-        }
-        // sort by value
-        List<KeyValuePair<string, TeamData>> list = map.ToList();
-        list.Sort(
-            delegate (KeyValuePair<string, TeamData> pair1,
-            KeyValuePair<string, TeamData> pair2)
-            {
-                if(pair1.Value == pair2.Value)
-                {
-                    // complex
-                    // compare goal difference
-                        // if same compare goals for
-                            // if same compare head to head games
-                }
-                return pair2.Value.points.CompareTo(pair1.Value.points);
-            }
-        );
-
         //sort by value
         if(listAltered != null)
             listAltered.Clear();
@@ -621,7 +715,7 @@ public class DataCompiler : MonoBehaviour {
             }
         );
 
-        AssignPositions(list, listAltered);
+        AssignPositionsAltered(listAltered);
 
         // set league table view
         int listIndex = 0;
@@ -724,20 +818,24 @@ public class DataCompiler : MonoBehaviour {
         PopulateTableShare();
     }
 
-    void AssignPositions(List<KeyValuePair<string, TeamData>> original, List<KeyValuePair<string, TeamData>> updated)
+    void AssignPositionsReal(List<KeyValuePair<string, TeamData>> list)//, List<KeyValuePair<string, TeamData>> updated)
     {
         int index = 0;
-        foreach(KeyValuePair<string, TeamData> kv in original)
+        foreach(KeyValuePair<string, TeamData> kv in list)
         {
             kv.Value.position = index;
             index++;
-        }
-        index = 0;
-        foreach (KeyValuePair<string, TeamData> kv in updated)
+        }   
+    }
+
+    void AssignPositionsAltered(List<KeyValuePair<string, TeamData>> list)//, List<KeyValuePair<string, TeamData>> updated)
+    {
+        int index = 0;
+        foreach (KeyValuePair<string, TeamData> kv in list)
         {
             kv.Value.positionAltered = index;
             index++;
-        }    
+        }
     }
 
     public void PopulateTableShare()

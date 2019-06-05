@@ -293,8 +293,6 @@ public class DataCompiler : MonoBehaviour {
         string sql = "SELECT * FROM " + strDiv;
         fixtures = dbManagerCurr.Query<Fixture>(sql);
         UpdateDataReal();
-        CompileTable();
-       
 
         // set max games
         // total games per team
@@ -307,8 +305,6 @@ public class DataCompiler : MonoBehaviour {
 
         TextAsset asset = new TextAsset();
         dbManager.databaseFile = asset;
-        // do again in case we are dont have all games in data (part way through season)
-        UpdateDataReal();
         CompileTable();
     }
 
@@ -493,68 +489,78 @@ public class DataCompiler : MonoBehaviour {
         // bool fixtureSkipped = false;
         DoChanges(pointsForWinHome, pointsForWinAway, pointsForDrawHome, pointsForDrawAway, pointsForRed,
             pointsForYellow, scoringFirstHalf, scoringSecondHalf, woodwork, onTarget, shot, foul);
-     
+
         // if swap defense/goalie
         // go through fixtures
         // swap records
 
-        bool swapDefense = true;
-        string TeamSwapA = "Liverpool";
-        string TeamSwapB = "Chelsea";
-        List<Fixture> fixturesTemp = fixtures;
 
-        /*
+        // reset fiddled data
+        foreach (KeyValuePair<string, TeamData> entry in map)
+        {
+            entry.Value.played = 0;
+            entry.Value.pointsAltered = 0;
+            entry.Value.positionAltered = 0;
+            entry.Value.diff = 0;
+            entry.Value.drawn = 0;
+            entry.Value.goalsAgainst = 0;
+            entry.Value.goalsFor = 0;
+            entry.Value.lost = 0;
+            entry.Value.won = 0;
+        }
+
+
+        bool swapDefense = true;
+        string TeamSwapA = "Man City";
+        string TeamSwapB = "Cardiff";
+        // copy of fixtures so we can alter
+        List<Fixture> fixturesTemp = new List<Fixture>(fixtures);
+
         if (swapDefense)
         {
             foreach (Fixture fixture in fixturesTemp)
             {
-                if(fixture.HomeTeam == TeamSwapA)
-                {
-                    // get fixture of TeamSwapB vs fixture.AwayTeam 
-                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='Chelsea' AND AwayTeam='Liverpool'";
-                    List<Fixture> fix;
-                    fix = dbManagerCurr.Query<Fixture>(sql);
-                    fixture.FTHG = 5;
+                // get all fixtures 
 
-                    bool stop = true;
-                }
-                else if (fixture.HomeTeam == TeamSwapB)
+
+                if (fixture.HomeTeam == TeamSwapA)
                 {
-                    // get fixture of TeamSwapA vs fixture.AwayTeam 
+                    // test for chelsea v chelsea etc
+                    if (TeamSwapB != fixture.AwayTeam)
+                    {
+                        // get fixture of TeamSwapB vs fixture.AwayTeam 
+                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapB + "' AND AwayTeam='" + fixture.AwayTeam + "'";
+                        List<Fixture> fix;
+                        fix = dbManagerCurr.Query<Fixture>(sql);
+                        if (fix.Count == 1)  // should always be 1
+                            fixture.FTHG = fix[0].FTHG;
+                    }    
                 }
-                else if (fixture.AwayTeam == TeamSwapA)
-                {
-                    // get fixture of TeamSwapB vs fixture.HomeTeam 
-                }
-                else if (fixture.AwayTeam == TeamSwapB)
-                {
-                    // get fixture of TeamSwapA vs fixture.HomeTeam 
-                }
-                // switch records of two fixtures
+                //else if (fixture.HomeTeam == TeamSwapB)
+                //{
+                //    // get fixture of TeamSwapA vs fixture.AwayTeam 
+                //}
+                //else if (fixture.AwayTeam == TeamSwapA)
+                //{
+                //    // get fixture of TeamSwapB vs fixture.HomeTeam 
+                //}
+                //else if (fixture.AwayTeam == TeamSwapB)
+                //{
+                //    // get fixture of TeamSwapA vs fixture.HomeTeam 
+                //}
+                //// switch records of two fixtures
 
             }
         }
-        */
+        
 
-        //UpdateDataReal();
-
-        foreach (Fixture fixture in fixturesTemp)
-        {
-            // TODO - reset all altered data to 0
-
-            map[fixture.HomeTeam].played = 0;
-            map[fixture.HomeTeam].pointsAltered = 0;
-           // map[fixture.HomeTeam]. = 0;
-
-            map[fixture.AwayTeam].played = 0;
-            map[fixture.AwayTeam].pointsAltered = 0;
-        }
+        
 
 
         // create map of teams with points collected as value    
         foreach (Fixture fixture in fixturesTemp)
         {
-            if(map[fixture.HomeTeam].played >= totalGamesAllowed)
+            if (map[fixture.HomeTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture
                 //fixtureSkipped = true;

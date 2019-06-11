@@ -510,20 +510,26 @@ public class DataCompiler : MonoBehaviour {
         }
 
 
-        bool swapDefense = true;
+        bool swapAttack =  true;
         string TeamSwapA = "Man City";
         string TeamSwapB = "Cardiff";
         // copy of fixtures so we can alter
         List<Fixture> fixturesTemp = new List<Fixture>(fixtures);
 
-        if (swapDefense)
+        if (swapAttack)
         {
             foreach (Fixture fixture in fixturesTemp)
             {
                 // get all fixtures 
-
-
-                if (fixture.HomeTeam == TeamSwapA)
+                // 2 special cases - fixtures betweeen TeamSwapA and TeamSwapB (skipped below)
+                if ((TeamSwapA == fixture.HomeTeam && TeamSwapB == fixture.AwayTeam) || (TeamSwapB == fixture.HomeTeam && TeamSwapA == fixture.AwayTeam))
+                {
+                    int tempGoalsHome = fixture.FTHG;
+                    fixture.FTHG = fixture.FTAG;
+                    fixture.FTAG = tempGoalsHome;
+                }
+                // 4 other cases - against other teams
+                else if (fixture.HomeTeam == TeamSwapA)
                 {
                     // test for chelsea v chelsea etc
                     if (TeamSwapB != fixture.AwayTeam)
@@ -536,19 +542,48 @@ public class DataCompiler : MonoBehaviour {
                             fixture.FTHG = fix[0].FTHG;
                     }    
                 }
-                //else if (fixture.HomeTeam == TeamSwapB)
-                //{
-                //    // get fixture of TeamSwapA vs fixture.AwayTeam 
-                //}
-                //else if (fixture.AwayTeam == TeamSwapA)
-                //{
-                //    // get fixture of TeamSwapB vs fixture.HomeTeam 
-                //}
-                //else if (fixture.AwayTeam == TeamSwapB)
-                //{
-                //    // get fixture of TeamSwapA vs fixture.HomeTeam 
-                //}
-                //// switch records of two fixtures
+                else if (fixture.HomeTeam == TeamSwapB)
+                {
+                    // test for chelsea v chelsea etc
+                    if (TeamSwapA != fixture.AwayTeam)
+                    {
+                        // get fixture of TeamSwapA vs fixture.AwayTeam 
+                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapA + "' AND AwayTeam='" + fixture.AwayTeam + "'";
+                        List<Fixture> fix;
+                        fix = dbManagerCurr.Query<Fixture>(sql);
+                        if (fix.Count == 1)  // should always be 1
+                            fixture.FTHG = fix[0].FTHG;
+                    }
+                }
+                else if (fixture.AwayTeam == TeamSwapA)
+                {
+                    // test for chelsea v chelsea etc
+                    if (TeamSwapB != fixture.HomeTeam)
+                    {
+                        // get fixture of fixture.HomeTeam vs TeamSwapB
+                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapB + "'";
+                        List<Fixture> fix;
+                        fix = dbManagerCurr.Query<Fixture>(sql);
+                        if (fix.Count == 1)  // should always be 1
+                            fixture.FTAG = fix[0].FTAG;
+                    }
+                }
+                else if (fixture.AwayTeam == TeamSwapB)
+                {
+                    // test for chelsea v chelsea etc
+                    if (TeamSwapA != fixture.HomeTeam)
+                    {
+                        // get fixture of fixture.HomeTeam vs TeamSwapA
+                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapA + "'";
+                        List<Fixture> fix;
+                        fix = dbManagerCurr.Query<Fixture>(sql);
+                        if (fix.Count == 1)  // should always be 1
+                            fixture.FTAG = fix[0].FTAG;
+                    }
+                }
+
+
+                // switch records of two fixtures
 
             }
         }

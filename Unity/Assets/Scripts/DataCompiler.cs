@@ -88,25 +88,28 @@ public class DataCompiler : MonoBehaviour {
     public Transform PointsForRedSlider;
     public Transform PointsForYellowSlider;
 
-    // Share Canvas View - depricated
-    public Transform[] TableTeams;
-    public Transform[] TablePlayed;
-    public Transform[] TablePoints;
-    public Transform[] TableWon;
-    public Transform[] TableLost;
-    public Transform[] TableDrawn;
-    public Transform[] TableGoalsFor;
-    public Transform[] TableGoalsAgainst;
-    public Transform[] TableDiff;
+    public Transform DropDownSwapAttacksTeamA;
+    public Transform DropDownSwapAttacksTeamB;
+
+    public Transform DropDownSwapDefencesTeamA;
+    public Transform DropDownSwapDefencesTeamB;
+
+    //// Share Canvas View - depricated
+    //public Transform[] TableTeams;
+    //public Transform[] TablePlayed;
+    //public Transform[] TablePoints;
+    //public Transform[] TableWon;
+    //public Transform[] TableLost;
+    //public Transform[] TableDrawn;
+    //public Transform[] TableGoalsFor;
+    //public Transform[] TableGoalsAgainst;
+    //public Transform[] TableDiff;
 
     // new table
     public Transform[] TableRows;
     public Transform[] ChangesText;
-
-
     public Transform txtDivision;
     public Transform txtYear;
-
     public Transform SliderTableOffset;
 
     List<Fixture> fixtures;
@@ -459,9 +462,40 @@ public class DataCompiler : MonoBehaviour {
         AssignPositionsReal(list);
     }
 
+    void PopulateTeamSwap()
+    {
+        Dropdown teamA = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
+        Dropdown teamB = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
+        Dropdown teamC = DropDownSwapDefencesTeamA.GetComponent<Dropdown>();
+        Dropdown teamD = DropDownSwapDefencesTeamB.GetComponent<Dropdown>();
+
+        // clear options
+        teamA.ClearOptions();
+        teamB.ClearOptions();
+        teamC.ClearOptions();
+        teamD.ClearOptions();
+        // populate
+        List<string> teams = new List<string>();
+        Dictionary<string, TeamData> mapTemp = new Dictionary<string, TeamData>(map); 
+        foreach (KeyValuePair<string, TeamData> entry in mapTemp)
+        {
+            teams.Add(entry.Key); 
+        }
+        // order
+        teams = teams.OrderBy(o => o).ToList();
+        teams.Insert(0, "NONE");
+        teamA.AddOptions(teams);
+        teamB.AddOptions(teams);
+        teamC.AddOptions(teams);
+        teamD.AddOptions(teams);
+    }
+
     void UpdateDataReal()
     {
         AddTeamsToMap();
+        PopulateTeamSwap();
+        // create new data with team swap values instead
+
         DetermineMarketsAvailable();
         SetRealData();
         SortAndAssignReal();
@@ -511,12 +545,14 @@ public class DataCompiler : MonoBehaviour {
 
 
         bool swapAttack =  true;
-        string TeamSwapA = "Man City";
-        string TeamSwapB = "Cardiff";
-        // copy of fixtures so we can alter
+        Dropdown ddAttackA = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
+        Dropdown ddAttackB = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
+        string TeamSwapA = ddAttackA.options[ddAttackA.value].text;// "Man City";
+        string TeamSwapB = ddAttackB.options[ddAttackB.value].text;// "Liverpool";
+        // copy of fixtures so we can alter, do this once only
         List<Fixture> fixturesTemp = new List<Fixture>(fixtures);
 
-        if (swapAttack)
+        if (swapAttack && TeamSwapA != "NONE" && TeamSwapB != "NONE")
         {
             foreach (Fixture fixture in fixturesTemp)
             {

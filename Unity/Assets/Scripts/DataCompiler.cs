@@ -24,31 +24,67 @@ class TeamData
     public int diff;
 }
 
-public class Fixture
+public interface ICloneable<T>
 {
-    public string   Div { get; set; }
-    public string   Date { get; set; }
-    public string   HomeTeam { get; set; }
-    public string   AwayTeam { get; set; }
-    public int      FTHG { get; set; } 
-    public int      FTAG { get; set; }
-    public string   FTR { get; set; }
-    public int      HTHG { get; set; }
-    public int      HTAG { get; set; }
-    public string   HTR { get; set; }
-    public string   Referee { get; set; }
-    public int      HS { get; set; }        // home - shots
-    public int      AS { get; set; }        // away - shots
-    public int      HST { get; set; }       // home - shots on target
-    public int      AST { get; set; }       // away - shots on target
-    public int      HHW { get; set; }       // home - hit woodwork
-    public int      AHW { get; set; }       // away - hit woodwork
-    public int      HF { get; set; }        // home - fouls
-    public int      AF { get; set; }        // away - fouls
-    public int      HY { get; set; }        // home - yellow
-    public int      AY { get; set; }        // sway - yellow
-    public int      HR { get; set; }        // home - red
-    public int      AR { get; set; }        // away - red
+    T Clone();
+}
+
+
+public class Fixture : ICloneable<Fixture>
+{
+    // Deep copy
+    public Fixture Clone()
+    {
+        Fixture F = new Fixture();
+        F.AF        = AF;
+        F.Div       = Div;
+        F.Date      = Date;
+        F.HomeTeam  = HomeTeam;
+        F.AwayTeam  = AwayTeam;
+        F.FTHG      = FTHG;
+        F.FTAG      = FTAG;
+        F.FTR       = FTR;
+        F.HTHG      = HTHG;
+        F.HTAG      = HTAG;
+        F.HTR       = HTR;
+        F.Referee   = Referee;
+        F.HS        = HS;
+        F.AS        = AS;
+        F.HST       = HST;
+        F.AST       = AST;
+        F.HHW       = HHW;
+        F.AHW       = AHW;
+        F.HF        = HF;
+        F.AF        = AF;
+        F.HY        = HY;
+        F.AY        = AY;
+        F.HR        = HR;
+        F.AR        = AR;
+        return F;
+    }
+    public string   Div         { get; set; }
+    public string   Date        { get; set; }
+    public string   HomeTeam    { get; set; }
+    public string   AwayTeam    { get; set; }
+    public int      FTHG        { get; set; } 
+    public int      FTAG        { get; set; }
+    public string   FTR         { get; set; }
+    public int      HTHG        { get; set; }
+    public int      HTAG        { get; set; }
+    public string   HTR         { get; set; }
+    public string   Referee     { get; set; }
+    public int      HS          { get; set; }        // home - shots
+    public int      AS          { get; set; }        // away - shots
+    public int      HST         { get; set; }       // home - shots on target
+    public int      AST         { get; set; }       // away - shots on target
+    public int      HHW         { get; set; }       // home - hit woodwork
+    public int      AHW         { get; set; }       // away - hit woodwork
+    public int      HF          { get; set; }        // home - fouls
+    public int      AF          { get; set; }        // away - fouls
+    public int      HY          { get; set; }        // home - yellow
+    public int      AY          { get; set; }        // sway - yellow
+    public int      HR          { get; set; }        // home - red
+    public int      AR          { get; set; }        // away - red
 }
 
 
@@ -113,6 +149,7 @@ public class DataCompiler : MonoBehaviour {
     public Transform SliderTableOffset;
 
     List<Fixture> fixtures;
+    List<Fixture> fixturesDeepCopy;
     Dictionary<string, TeamData> map;
     List<KeyValuePair<string, TeamData>> listAltered;
 
@@ -127,10 +164,9 @@ public class DataCompiler : MonoBehaviour {
         Array.Sort<SimpleSQLManager>(dbManagerArr,      SortDataBaseManagers);
         Array.Sort<SimpleSQLManager>(dbManagerArrItaly, SortDataBaseManagers);
         Array.Sort<SimpleSQLManager>(dbManagerArrSpain, SortDataBaseManagers);
-
         var sorted = dbManagerArr.OrderBy(item => item.databaseFile.name); 
-
-        map         = new Dictionary<string, TeamData>();
+        map                 = new Dictionary<string, TeamData>();
+        fixturesDeepCopy    = null;
         UpdateDivision();
     }
 	
@@ -163,6 +199,7 @@ public class DataCompiler : MonoBehaviour {
 
     public void ResetGui()
     {
+        ResetSwaps();
         PointsForWinHomeSlider.GetComponent<Slider>().value = 3;
         PointsForWinAwaySlider.GetComponent<Slider>().value = 3;
         PointsForDrawHomeSlider.GetComponent<Slider>().value = 1;
@@ -177,10 +214,7 @@ public class DataCompiler : MonoBehaviour {
         CheckboxShotOnTarget.GetComponent<Toggle>().isOn = false;
         CheckboxShot.GetComponent<Toggle>().isOn = false;
         CheckboxFoul.GetComponent<Toggle>().isOn = false;
-        //TotalGamesPlayedInput;
         TotalGamesPlayedSlider.GetComponent<Slider>().value = TotalGamesPlayedSlider.GetComponent<Slider>().maxValue;
-
-
     }
 
     bool updateDivisionEnabled = true;
@@ -206,6 +240,7 @@ public class DataCompiler : MonoBehaviour {
 
             optionsYear.Add("2018-2019");
             optionsYear.Add("2017-2018");
+            optionsYear.Add("2016-2017");
 
         }
         if (country == 1)
@@ -240,6 +275,9 @@ public class DataCompiler : MonoBehaviour {
             return;
 
         Debug.Log("Updating Division");
+        // new year/division, different teams and number of teams
+        ResetSwaps();
+
         // Database - get country/year
         int country = DropDownCountry.GetComponent<Dropdown>().value;
         int year = DropDownYear.GetComponent<Dropdown>().value;
@@ -501,6 +539,160 @@ public class DataCompiler : MonoBehaviour {
         SortAndAssignReal();
     }
 
+    void ResetSwaps()
+    {
+        Dropdown ddAttackA  = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
+        Dropdown ddAttackB  = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
+        Dropdown ddDefenceA = DropDownSwapDefencesTeamA.GetComponent<Dropdown>();
+        Dropdown ddDefenceB = DropDownSwapDefencesTeamB.GetComponent<Dropdown>();
+
+        ddAttackA.value     = 0;
+        ddAttackB.value     = 0;
+        ddDefenceA.value    = 0;
+        ddDefenceB.value    = 0;
+    }
+
+    void SwitchAttacks(bool switchAttacks, bool home, Fixture fixtureA, Fixture fixtureB)
+    {
+        if (switchAttacks)
+        {
+            if (home)
+            {
+                fixtureA.FTHG = fixtureB.FTHG;
+            }
+            else
+            {
+                fixtureA.FTAG = fixtureB.FTAG;
+            }
+        }
+    }
+
+    void SwitchDefences(bool switchDefences, bool home, Fixture fixtureA, Fixture fixtureB)
+    {
+        if (switchDefences)
+        {
+            if (home)
+            {
+                fixtureA.FTAG = fixtureB.FTAG;
+            }
+            else
+            {
+                fixtureA.FTHG = fixtureB.FTHG;
+            }
+        }
+    }
+
+
+    // problem - if team has apostrophe (nott'm forrest)
+    void DoSwaps(bool attack, string A, string B, bool doHeadToHead)
+    {
+        foreach (Fixture fixture in fixturesDeepCopy)
+        {
+            string TeamSwapA = A;
+            string TeamSwapB = B;
+            // get all fixtures 
+            // 2 special cases - fixtures betweeen TeamSwapA and TeamSwapB (skipped below)
+            // only do this twice per update as swapping for attack then again for defence
+            if (doHeadToHead && ((TeamSwapA == fixture.HomeTeam && TeamSwapB == fixture.AwayTeam) || (TeamSwapB == fixture.HomeTeam && TeamSwapA == fixture.AwayTeam)))
+            {
+                int tempGoalsHome = fixture.FTHG;
+                fixture.FTHG = fixture.FTAG;
+                fixture.FTAG = tempGoalsHome;
+            }
+            // 4 other cases - against other teams
+            else if (fixture.HomeTeam == TeamSwapA)
+            {
+                // test for chelsea v chelsea etc
+                if (TeamSwapB != fixture.AwayTeam)
+                {
+                    // get fixture of TeamSwapB vs fixture.AwayTeam 
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapB + "' AND AwayTeam='" + fixture.AwayTeam + "'";
+                    List<Fixture> fix;
+                    fix = dbManagerCurr.Query<Fixture>(sql);
+                    if (fix.Count == 1)  // should always be 1
+                    {
+                        SwitchAttacks(attack, true, fixture, fix[0]);
+                        SwitchDefences(!attack, true, fixture, fix[0]);
+                    }
+                }
+            }
+            else if (fixture.HomeTeam == TeamSwapB)
+            {
+                // test for chelsea v chelsea etc
+                if (TeamSwapA != fixture.AwayTeam)
+                {
+                    // get fixture of TeamSwapA vs fixture.AwayTeam 
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapA + "' AND AwayTeam='" + fixture.AwayTeam + "'";
+                    List<Fixture> fix;
+                    fix = dbManagerCurr.Query<Fixture>(sql);
+                    if (fix.Count == 1)  // should always be 1
+                    {
+                        SwitchAttacks(attack, true, fixture, fix[0]);
+                        SwitchDefences(!attack, true, fixture, fix[0]);
+                    }
+                }
+            }
+            else if (fixture.AwayTeam == TeamSwapA)
+            {
+                // test for chelsea v chelsea etc
+                if (TeamSwapB != fixture.HomeTeam)
+                {
+                    // get fixture of fixture.HomeTeam vs TeamSwapB
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapB + "'";
+                    List<Fixture> fix;
+                    fix = dbManagerCurr.Query<Fixture>(sql);
+                    if (fix.Count == 1)  // should always be 1
+                    {
+                        SwitchAttacks(attack, false, fixture, fix[0]);
+                        SwitchDefences(!attack, false, fixture, fix[0]);
+                    }
+                }
+            }
+            else if (fixture.AwayTeam == TeamSwapB)
+            {
+                // test for chelsea v chelsea etc
+                if (TeamSwapA != fixture.HomeTeam)
+                {
+                    // get fixture of fixture.HomeTeam vs TeamSwapA
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapA + "'";
+                    List<Fixture> fix;
+                    fix = dbManagerCurr.Query<Fixture>(sql);
+                    if (fix.Count == 1)  // should always be 1
+                    {
+                        SwitchAttacks(attack, false, fixture, fix[0]);
+                        SwitchDefences(!attack, false, fixture, fix[0]);
+                    }
+                }
+            }
+        }
+    }
+
+    public void UpdateSwaps()
+    {
+        Dropdown    ddAttackA   = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
+        Dropdown    ddAttackB   = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
+        Dropdown    ddDefenceA  = DropDownSwapDefencesTeamA.GetComponent<Dropdown>();
+        Dropdown    ddDefenceB  = DropDownSwapDefencesTeamB.GetComponent<Dropdown>();
+        string      TeamSwapA   = ddAttackA.options[ddAttackA.value].text;
+        string      TeamSwapB   = ddAttackB.options[ddAttackB.value].text;
+        string      TeamSwapC   = ddDefenceA.options[ddDefenceA.value].text;
+        string      TeamSwapD   = ddDefenceB.options[ddDefenceB.value].text;
+        bool        swapAttack  = TeamSwapA != "NONE" && TeamSwapB != "NONE";
+        bool        swapDefence = TeamSwapC != "NONE" && TeamSwapD != "NONE";
+        fixturesDeepCopy = null;
+        if (swapAttack || swapDefence)
+        {
+            // deep copy
+            fixturesDeepCopy = fixtures.ConvertAll(fixture => fixture.Clone());
+
+            bool doHeadTOHead = !(swapAttack && swapDefence);
+            DoSwaps(true, TeamSwapA, TeamSwapB, true);
+            DoSwaps(false, TeamSwapC, TeamSwapD, doHeadTOHead);
+        }
+        // something changed - even if 'none'
+        CompileTable();
+    }
+
     public void CompileTable()
     {
         int pointsForWinHome    = int.Parse(PointsForWinHomeInput.GetComponent<InputField>().text);
@@ -543,91 +735,13 @@ public class DataCompiler : MonoBehaviour {
             entry.Value.won = 0;
         }
 
-
-        bool swapAttack =  true;
-        Dropdown ddAttackA = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
-        Dropdown ddAttackB = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
-        string TeamSwapA = ddAttackA.options[ddAttackA.value].text;// "Man City";
-        string TeamSwapB = ddAttackB.options[ddAttackB.value].text;// "Liverpool";
-        // copy of fixtures so we can alter, do this once only
-        List<Fixture> fixturesTemp = new List<Fixture>(fixtures);
-
-        if (swapAttack && TeamSwapA != "NONE" && TeamSwapB != "NONE")
-        {
-            foreach (Fixture fixture in fixturesTemp)
-            {
-                // get all fixtures 
-                // 2 special cases - fixtures betweeen TeamSwapA and TeamSwapB (skipped below)
-                if ((TeamSwapA == fixture.HomeTeam && TeamSwapB == fixture.AwayTeam) || (TeamSwapB == fixture.HomeTeam && TeamSwapA == fixture.AwayTeam))
-                {
-                    int tempGoalsHome = fixture.FTHG;
-                    fixture.FTHG = fixture.FTAG;
-                    fixture.FTAG = tempGoalsHome;
-                }
-                // 4 other cases - against other teams
-                else if (fixture.HomeTeam == TeamSwapA)
-                {
-                    // test for chelsea v chelsea etc
-                    if (TeamSwapB != fixture.AwayTeam)
-                    {
-                        // get fixture of TeamSwapB vs fixture.AwayTeam 
-                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapB + "' AND AwayTeam='" + fixture.AwayTeam + "'";
-                        List<Fixture> fix;
-                        fix = dbManagerCurr.Query<Fixture>(sql);
-                        if (fix.Count == 1)  // should always be 1
-                            fixture.FTHG = fix[0].FTHG;
-                    }    
-                }
-                else if (fixture.HomeTeam == TeamSwapB)
-                {
-                    // test for chelsea v chelsea etc
-                    if (TeamSwapA != fixture.AwayTeam)
-                    {
-                        // get fixture of TeamSwapA vs fixture.AwayTeam 
-                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapA + "' AND AwayTeam='" + fixture.AwayTeam + "'";
-                        List<Fixture> fix;
-                        fix = dbManagerCurr.Query<Fixture>(sql);
-                        if (fix.Count == 1)  // should always be 1
-                            fixture.FTHG = fix[0].FTHG;
-                    }
-                }
-                else if (fixture.AwayTeam == TeamSwapA)
-                {
-                    // test for chelsea v chelsea etc
-                    if (TeamSwapB != fixture.HomeTeam)
-                    {
-                        // get fixture of fixture.HomeTeam vs TeamSwapB
-                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapB + "'";
-                        List<Fixture> fix;
-                        fix = dbManagerCurr.Query<Fixture>(sql);
-                        if (fix.Count == 1)  // should always be 1
-                            fixture.FTAG = fix[0].FTAG;
-                    }
-                }
-                else if (fixture.AwayTeam == TeamSwapB)
-                {
-                    // test for chelsea v chelsea etc
-                    if (TeamSwapA != fixture.HomeTeam)
-                    {
-                        // get fixture of fixture.HomeTeam vs TeamSwapA
-                        string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapA + "'";
-                        List<Fixture> fix;
-                        fix = dbManagerCurr.Query<Fixture>(sql);
-                        if (fix.Count == 1)  // should always be 1
-                            fixture.FTAG = fix[0].FTAG;
-                    }
-                }
-
-
-                // switch records of two fixtures
-
-            }
-        }
-        
-
-        
-
-
+        // we use deep copy if attack/defence switches have been made to data
+        List<Fixture> fixturesTemp;
+        if (fixturesDeepCopy != null)
+            fixturesTemp = fixturesDeepCopy;
+        else
+            fixturesTemp = fixtures;
+       
         // create map of teams with points collected as value    
         foreach (Fixture fixture in fixturesTemp)
         {

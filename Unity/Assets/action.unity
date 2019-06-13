@@ -4207,6 +4207,16 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 1560300234}
     m_Modifications:
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 224658773345822134, guid: f8c38335615d77246bd14413a48b7c94,
         type: 2}
       propertyPath: m_LocalPosition.x
@@ -4250,7 +4260,7 @@ Prefab:
     - target: {fileID: 224658773345822134, guid: f8c38335615d77246bd14413a48b7c94,
         type: 2}
       propertyPath: m_AnchoredPosition.x
-      value: -0.10001
+      value: -0.1000061
       objectReference: {fileID: 0}
     - target: {fileID: 224658773345822134, guid: f8c38335615d77246bd14413a48b7c94,
         type: 2}
@@ -4305,6 +4315,56 @@ Prefab:
         type: 2}
       propertyPath: m_Text
       value: SWAP DEFENCES
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 620193042}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 620193042}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UpdateSwaps
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UpdateSwaps
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f8c38335615d77246bd14413a48b7c94, type: 2}
@@ -4385,7 +4445,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 389745501}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.97948736
+  m_Size: 0.9794872
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -6287,6 +6347,16 @@ Prefab:
   m_Modification:
     m_TransformParent: {fileID: 1560300234}
     m_Modifications:
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 224658773345822134, guid: f8c38335615d77246bd14413a48b7c94,
         type: 2}
       propertyPath: m_LocalPosition.x
@@ -6376,6 +6446,56 @@ Prefab:
         type: 2}
       propertyPath: m_Pivot.y
       value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 620193042}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 620193042}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UpdateSwaps
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430833769916564, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: UpdateSwaps
+      objectReference: {fileID: 0}
+    - target: {fileID: 114716446939811416, guid: f8c38335615d77246bd14413a48b7c94,
+        type: 2}
+      propertyPath: m_OnValueChanged.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f8c38335615d77246bd14413a48b7c94, type: 2}
@@ -9286,7 +9406,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 617798848}
   m_HandleRect: {fileID: 617798847}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 0.35152128
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -11493,7 +11613,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: 1533}
+  m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 1533}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &1562507247

@@ -130,16 +130,7 @@ public class DataCompiler : MonoBehaviour {
     public Transform DropDownSwapDefencesTeamA;
     public Transform DropDownSwapDefencesTeamB;
 
-    //// Share Canvas View - depricated
-    //public Transform[] TableTeams;
-    //public Transform[] TablePlayed;
-    //public Transform[] TablePoints;
-    //public Transform[] TableWon;
-    //public Transform[] TableLost;
-    //public Transform[] TableDrawn;
-    //public Transform[] TableGoalsFor;
-    //public Transform[] TableGoalsAgainst;
-    //public Transform[] TableDiff;
+    public Transform DropDownRemoveRef;
 
     // new table
     public Transform[] TableRows;
@@ -392,11 +383,19 @@ public class DataCompiler : MonoBehaviour {
         }
     }
 
+    HashSet<string> referees;
+
+    // does refs too
     void AddTeamsToMap()
     {
+        referees = new HashSet<string>();
+
         map.Clear();
         foreach (Fixture fixture in fixtures)
         {
+            // refs
+            referees.Add(fixture.Referee);
+
             if (!map.ContainsKey(fixture.HomeTeam))
             {
                 TeamData data = new TeamData();
@@ -500,6 +499,7 @@ public class DataCompiler : MonoBehaviour {
         AssignPositionsReal(list);
     }
 
+    // does ref too
     void PopulateTeamSwap()
     {
         Dropdown teamA = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
@@ -507,12 +507,23 @@ public class DataCompiler : MonoBehaviour {
         Dropdown teamC = DropDownSwapDefencesTeamA.GetComponent<Dropdown>();
         Dropdown teamD = DropDownSwapDefencesTeamB.GetComponent<Dropdown>();
 
+        Dropdown ddRemoveRef = DropDownRemoveRef.GetComponent<Dropdown>();
+
         // clear options
         teamA.ClearOptions();
         teamB.ClearOptions();
         teamC.ClearOptions();
         teamD.ClearOptions();
+        ddRemoveRef.ClearOptions();
+
         // populate
+        // refs
+        List<string> refs = referees.ToList<string>();  //new List<string>();
+        refs.Insert(0, "NONE");
+        ddRemoveRef.AddOptions(refs);
+        ddRemoveRef.value = 0;
+
+        // teams for swap
         List<string> teams = new List<string>();
         Dictionary<string, TeamData> mapTemp = new Dictionary<string, TeamData>(map); 
         foreach (KeyValuePair<string, TeamData> entry in mapTemp)
@@ -539,17 +550,20 @@ public class DataCompiler : MonoBehaviour {
         SortAndAssignReal();
     }
 
+    // and refs
     void ResetSwaps()
     {
         Dropdown ddAttackA  = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
         Dropdown ddAttackB  = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
         Dropdown ddDefenceA = DropDownSwapDefencesTeamA.GetComponent<Dropdown>();
         Dropdown ddDefenceB = DropDownSwapDefencesTeamB.GetComponent<Dropdown>();
+        Dropdown ddRefs     = DropDownRemoveRef.GetComponent<Dropdown>();
 
         ddAttackA.value     = 0;
         ddAttackB.value     = 0;
         ddDefenceA.value    = 0;
         ddDefenceB.value    = 0;
+        ddRefs.value        = 0;
     }
 
     void SwitchAttacks(bool switchAttacks, bool home, Fixture fixtureA, Fixture fixtureB)
@@ -749,16 +763,16 @@ public class DataCompiler : MonoBehaviour {
             {
                 // skip this fixture
                 //fixtureSkipped = true;
-
                 continue;
             }
             if (map[fixture.AwayTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture
                 //fixtureSkipped = true;
-
                 continue;
             }
+
+
 
             //totalShots += fixture.HS + fixture.AS;
             //totalOnTarget += fixture.HST + fixture.AST;
@@ -814,6 +828,36 @@ public class DataCompiler : MonoBehaviour {
                 }
             }
             //}
+
+            // TODO, make this fairer - average goals home/away etc
+            // skip if we blacklisted referee
+            Dropdown ddReferee = DropDownRemoveRef.GetComponent<Dropdown>();
+            if (fixture.Referee == ddReferee.captionText.text)
+            {
+                // skip this fixture
+                //fixtureSkipped = true;
+                float averageHomeGoals = 0.0f;
+                float averageAwayGoals = 0.0f;
+                // maybe get average points per game up to this point?
+                if (map[fixture.HomeTeam].played > 0)
+                {
+                    averageHomeGoals = map[fixture.HomeTeam].goalsFor / map[fixture.HomeTeam].played;
+
+                    if (map[fixture.AwayTeam].played > 0)
+                    {
+                        averageAwayGoals = map[fixture.AwayTeam].goalsFor / map[fixture.AwayTeam].played;
+                    }
+                }
+                totalHomeGoals = (int)averageHomeGoals;
+                totalAwayGoals = (int)averageAwayGoals;
+                // map[fixture.HomeTeam].pointsAltered += (int)averageHome;
+                // map[fixture.AwayTeam].pointsAltered += (int)averageAway;
+
+                //continue;
+            }
+
+
+
 
             if (onTarget)
             {

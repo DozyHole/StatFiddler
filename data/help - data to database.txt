@@ -1,0 +1,24 @@
+Download and open 'DB Browser for SQLite'
+https://sqlitebrowser.org/dl/
+
+I will use England 2017 as example as that has been done.
+select New Database
+save as England/2017/db.db
+
+for each csv file
+	select File
+	select Import
+	select Table from CSV file...
+	select England/2017/E0.csv
+	select Open
+	select Okay
+repeat above for E1.csv, E2.csv, E3.csv and EC.csv
+
+select Write Changes
+
+We now have our database for England 2017 which contains all divisions
+copy and paste db.db to \Unity\Assets\Data\EN
+rename to 2017.bytes
+
+That's it, we must do this for all data. Maybe just go back 5 years for each league to start with so I can see how
+large app becomes, but think all leagues can be added eventually. 

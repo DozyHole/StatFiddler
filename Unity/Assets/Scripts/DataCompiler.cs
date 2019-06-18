@@ -606,7 +606,7 @@ public class DataCompiler : MonoBehaviour {
                 if (TeamSwapB != fixture.AwayTeam)
                 {
                     // get fixture of TeamSwapB vs fixture.AwayTeam 
-                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapB + "' AND AwayTeam='" + fixture.AwayTeam + "'";
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapB.Replace("'", "''") + "' AND AwayTeam='" + fixture.AwayTeam.Replace("'", "''") + "'";
                     List<Fixture> fix;
                     fix = dbManagerCurr.Query<Fixture>(sql);
                     if (fix.Count == 1)  // should always be 1
@@ -622,7 +622,7 @@ public class DataCompiler : MonoBehaviour {
                 if (TeamSwapA != fixture.AwayTeam)
                 {
                     // get fixture of TeamSwapA vs fixture.AwayTeam 
-                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapA + "' AND AwayTeam='" + fixture.AwayTeam + "'";
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + TeamSwapA.Replace("'", "''") + "' AND AwayTeam='" + fixture.AwayTeam.Replace("'", "''") + "'";
                     List<Fixture> fix;
                     fix = dbManagerCurr.Query<Fixture>(sql);
                     if (fix.Count == 1)  // should always be 1
@@ -638,7 +638,7 @@ public class DataCompiler : MonoBehaviour {
                 if (TeamSwapB != fixture.HomeTeam)
                 {
                     // get fixture of fixture.HomeTeam vs TeamSwapB
-                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapB + "'";
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam.Replace("'", "''") + "' AND AwayTeam='" + TeamSwapB.Replace("'", "''") + "'";
                     List<Fixture> fix;
                     fix = dbManagerCurr.Query<Fixture>(sql);
                     if (fix.Count == 1)  // should always be 1
@@ -654,7 +654,7 @@ public class DataCompiler : MonoBehaviour {
                 if (TeamSwapA != fixture.HomeTeam)
                 {
                     // get fixture of fixture.HomeTeam vs TeamSwapA
-                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam + "' AND AwayTeam='" + TeamSwapA + "'";
+                    string sql = "SELECT * FROM " + strDiv + " WHERE HomeTeam='" + fixture.HomeTeam.Replace("'", "''") + "' AND AwayTeam='" + TeamSwapA.Replace("'", "''") + "'";
                     List<Fixture> fix;
                     fix = dbManagerCurr.Query<Fixture>(sql);
                     if (fix.Count == 1)  // should always be 1

@@ -60,6 +60,8 @@ public class Fixture : ICloneable<Fixture>
         F.AY        = AY;
         F.HR        = HR;
         F.AR        = AR;
+        F.HC        = HC;
+        F.AC        = AC;
         return F;
     }
     public string   Div         { get; set; }
@@ -75,16 +77,18 @@ public class Fixture : ICloneable<Fixture>
     public string   Referee     { get; set; }
     public int      HS          { get; set; }        // home - shots
     public int      AS          { get; set; }        // away - shots
-    public int      HST         { get; set; }       // home - shots on target
-    public int      AST         { get; set; }       // away - shots on target
-    public int      HHW         { get; set; }       // home - hit woodwork
-    public int      AHW         { get; set; }       // away - hit woodwork
+    public int      HST         { get; set; }        // home - shots on target
+    public int      AST         { get; set; }        // away - shots on target
+    public int      HHW         { get; set; }        // home - hit woodwork
+    public int      AHW         { get; set; }        // away - hit woodwork
     public int      HF          { get; set; }        // home - fouls
     public int      AF          { get; set; }        // away - fouls
     public int      HY          { get; set; }        // home - yellow
-    public int      AY          { get; set; }        // sway - yellow
+    public int      AY          { get; set; }        // away - yellow
     public int      HR          { get; set; }        // home - red
     public int      AR          { get; set; }        // away - red
+    public int      HC          { get; set; }        // home - corner
+    public int      AC          { get; set; }        // away - corner
 }
 
 
@@ -114,6 +118,7 @@ public class DataCompiler : MonoBehaviour {
     public Transform CheckboxShotOnTarget;
     public Transform CheckboxShot;
     public Transform CheckboxFoul;
+    public Transform CheckboxCorner;
     public Transform TotalGamesPlayedInput;
     public Transform TotalGamesPlayedSlider;
 
@@ -206,6 +211,7 @@ public class DataCompiler : MonoBehaviour {
         CheckboxShotOnTarget.GetComponent<Toggle>().isOn = false;
         CheckboxShot.GetComponent<Toggle>().isOn = false;
         CheckboxFoul.GetComponent<Toggle>().isOn = false;
+        CheckboxCorner.GetComponent<Toggle>().isOn = false;
         TotalGamesPlayedSlider.GetComponent<Slider>().value = TotalGamesPlayedSlider.GetComponent<Slider>().maxValue;
     }
 
@@ -343,7 +349,7 @@ public class DataCompiler : MonoBehaviour {
     }
 
     void DoChanges(int pointsForWinHome, int pointsForWinAway, int pointsForDrawHome, int pointsForDrawAway, int pointsForRed,
-        int pointsForYellow, bool scoringFirstHalf, bool scoringSecondHalf, bool woodwork, bool onTarget, bool shot, bool foul)
+        int pointsForYellow, bool scoringFirstHalf, bool scoringSecondHalf, bool woodwork, bool onTarget, bool shot, bool foul, bool corner, string referee, bool swapAttacks, bool swapDefences)
     {
         // list of rule changes user has made
         ArrayList arrChanges = new ArrayList();
@@ -371,7 +377,14 @@ public class DataCompiler : MonoBehaviour {
             arrChanges.Add("* Goal for shot");
         if (foul)
             arrChanges.Add("* Goal for foul");
-
+        if (corner)
+            arrChanges.Add("* Goal for corner");
+        if(referee != "NONE")
+            arrChanges.Add("* No ref: " + referee);
+        if (swapAttacks)
+            arrChanges.Add("* Attacks swapped");
+        if (swapDefences)
+            arrChanges.Add("* Defences swapped");
         int index = 0;
         foreach(Transform t in ChangesText)
         {
@@ -426,18 +439,21 @@ public class DataCompiler : MonoBehaviour {
         int totalOnTarget = 0;
         int totalWoodwork = 0;
         int totalFouls = 0;
+        int totalCorners = 0;
         foreach (Fixture fixture in fixtures)
         {
             totalShots += fixture.HS + fixture.AS;
             totalOnTarget += fixture.HST + fixture.AST;
             totalWoodwork += fixture.HHW + fixture.AHW;
             totalFouls += fixture.HF + fixture.AF;
+            totalCorners += fixture.HC + fixture.AC;
         }
         // disable ui if not used
         CheckboxWoodwork.GetComponent<Toggle>().interactable = true;
         CheckboxShot.GetComponent<Toggle>().interactable = true;
         CheckboxShotOnTarget.GetComponent<Toggle>().interactable = true;
         CheckboxFoul.GetComponent<Toggle>().interactable = true;
+        CheckboxCorner.GetComponent<Toggle>().interactable = true;
         if (totalWoodwork == 0)
         {
             CheckboxWoodwork.GetComponent<Toggle>().interactable = false;
@@ -453,6 +469,10 @@ public class DataCompiler : MonoBehaviour {
         if (totalFouls == 0)
         {
             CheckboxFoul.GetComponent<Toggle>().interactable = false;
+        }
+        if (totalCorners == 0)
+        {
+            CheckboxCorner.GetComponent<Toggle>().interactable = false;
         }
     }
 
@@ -724,13 +744,21 @@ public class DataCompiler : MonoBehaviour {
         bool onTarget           = CheckboxShotOnTarget.GetComponent<Toggle>().isOn;
         bool shot               = CheckboxShot.GetComponent<Toggle>().isOn;
         bool foul               = CheckboxFoul.GetComponent<Toggle>().isOn;
-
+        bool corner             = CheckboxCorner.GetComponent<Toggle>().isOn;
         // get it from value of slider, not text box
         int totalGamesAllowed = (int)TotalGamesPlayedSlider.GetComponent<Slider>().value;
 
+        Dropdown ddReferee  = DropDownRemoveRef.GetComponent<Dropdown>();
+        Dropdown ddTeamA    = DropDownSwapAttacksTeamA.GetComponent<Dropdown>();
+        Dropdown ddTeamB    = DropDownSwapAttacksTeamB.GetComponent<Dropdown>();
+        Dropdown ddTeamC    = DropDownSwapDefencesTeamA.GetComponent<Dropdown>();
+        Dropdown ddTeamD    = DropDownSwapDefencesTeamB.GetComponent<Dropdown>();
+        bool attacksSwapped = ddTeamA.captionText.text != "NONE" && ddTeamB.captionText.text != "NONE";
+        bool defencesSwapped = ddTeamC.captionText.text != "NONE" && ddTeamD.captionText.text != "NONE";
+
         // bool fixtureSkipped = false;
         DoChanges(pointsForWinHome, pointsForWinAway, pointsForDrawHome, pointsForDrawAway, pointsForRed,
-            pointsForYellow, scoringFirstHalf, scoringSecondHalf, woodwork, onTarget, shot, foul);
+            pointsForYellow, scoringFirstHalf, scoringSecondHalf, woodwork, onTarget, shot, foul, corner, ddReferee.captionText.text, attacksSwapped, defencesSwapped);
 
         // if swap defense/goalie
         // go through fixtures
@@ -833,7 +861,7 @@ public class DataCompiler : MonoBehaviour {
 
             // TODO, make this fairer - average goals home/away etc
             // skip if we blacklisted referee
-            Dropdown ddReferee = DropDownRemoveRef.GetComponent<Dropdown>();
+            //Dropdown ddReferee = DropDownRemoveRef.GetComponent<Dropdown>();
             if (fixture.Referee == ddReferee.captionText.text)
             {
                 // skip this fixture
@@ -883,6 +911,12 @@ public class DataCompiler : MonoBehaviour {
             {
                 totalHomeGoals += fixture.HF; // fouls
                 totalAwayGoals += fixture.AF; // fouls
+            }
+
+            if (corner)
+            {
+                totalHomeGoals += fixture.HC; // corners
+                totalAwayGoals += fixture.AC; // corners
             }
 
             //** altered results based on selections **

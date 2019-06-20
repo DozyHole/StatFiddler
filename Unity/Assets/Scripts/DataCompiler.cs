@@ -158,7 +158,8 @@ public class DataCompiler : MonoBehaviour {
         var sorted = dbManagerArr.OrderBy(item => item.databaseFile.name); 
         map                 = new Dictionary<string, TeamData>();
         fixturesDeepCopy    = null;
-        UpdateDivision();
+        UpdateCountry();
+        //UpdateDivision();
     }
 	
 	// Update is called once per frame
@@ -232,6 +233,7 @@ public class DataCompiler : MonoBehaviour {
             optionsYear.Add("2018-2019");
             optionsYear.Add("2017-2018");
             optionsYear.Add("2016-2017");
+            optionsYear.Add("2015-2016");
 
         }
         if (country == 1)

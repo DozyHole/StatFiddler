@@ -121,20 +121,16 @@ public class DataCompiler : MonoBehaviour {
     public Transform CheckboxCorner;
     public Transform TotalGamesPlayedInput;
     public Transform TotalGamesPlayedSlider;
-
     public Transform PointsForWinHomeSlider;
     public Transform PointsForWinAwaySlider;
     public Transform PointsForDrawHomeSlider;
     public Transform PointsForDrawAwaySlider;
     public Transform PointsForRedSlider;
     public Transform PointsForYellowSlider;
-
     public Transform DropDownSwapAttacksTeamA;
     public Transform DropDownSwapAttacksTeamB;
-
     public Transform DropDownSwapDefencesTeamA;
     public Transform DropDownSwapDefencesTeamB;
-
     public Transform DropDownRemoveRef;
 
     // new table
@@ -164,7 +160,6 @@ public class DataCompiler : MonoBehaviour {
         map                 = new Dictionary<string, TeamData>();
         fixturesDeepCopy    = null;
         UpdateCountry();
-        //UpdateDivision();
     }
 	
 	// Update is called once per frame
@@ -191,7 +186,6 @@ public class DataCompiler : MonoBehaviour {
             m.Close();
             m.Dispose();
         }
-
     }
 
     public void ResetGui()
@@ -241,6 +235,34 @@ public class DataCompiler : MonoBehaviour {
             optionsYear.Add("2016-2017");
             optionsYear.Add("2015-2016");
 
+            optionsYear.Add("2014-2015");
+            optionsYear.Add("2013-2014");
+            optionsYear.Add("2012-2013");
+            optionsYear.Add("2011-2012");
+
+            optionsYear.Add("2010-2011");
+            optionsYear.Add("2009-2010");
+            optionsYear.Add("2008-2009");
+            optionsYear.Add("2007-2008");
+
+            optionsYear.Add("2006-2007");
+            optionsYear.Add("2005-2006");
+            optionsYear.Add("2004-2005");
+            optionsYear.Add("2003-2004");
+
+            optionsYear.Add("2002-2003");
+            optionsYear.Add("2001-2002");
+            optionsYear.Add("2000-2001");
+            optionsYear.Add("1999-2000");
+
+            optionsYear.Add("1998-1999");
+            optionsYear.Add("1997-1998");
+            optionsYear.Add("1996-1997");
+            optionsYear.Add("1995-1996");
+
+            optionsYear.Add("1994-1995");
+            optionsYear.Add("1993-1994");
+
         }
         if (country == 1)
         {
@@ -267,6 +289,7 @@ public class DataCompiler : MonoBehaviour {
         UpdateDivision();
 
     }
+
     string strDiv = "";
     public void UpdateDivision()
     {
@@ -286,13 +309,33 @@ public class DataCompiler : MonoBehaviour {
         Debug.Log("year " + year);
         Debug.Log("country " + country);
 
+        List<string> optionsDiv = new List<string>();
         if (country == 0)
         {
             // EN
-            // years = 3
-            // divisions = 5
+            DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+            optionsDiv.Add("PREMIER LEAGUE");
+            optionsDiv.Add("CHAMPIONSHIP");
+            optionsDiv.Add("DIVISION 1");
+            optionsDiv.Add("DIVISION 2");
+            optionsDiv.Add("CONFERENCE");
+            DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
+
+            // how many divisions does each year have?    18
+            int[] divCount = new int[] { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
+            if(divCount[year] < 5)
+                DropDownDivision.GetComponent<Dropdown>().options.RemoveAt(4);
+
             dbManagerCurr = dbManagerArr[year];
             div = DropDownDivision.GetComponent<Dropdown>().value;
+
+            // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
+            while(div >= divCount[year])
+            {
+                div--;
+                DropDownDivision.GetComponent<Dropdown>().value = div;
+            }
+
             strDiv = "E0";
             switch (div)
             {
@@ -409,7 +452,11 @@ public class DataCompiler : MonoBehaviour {
         foreach (Fixture fixture in fixtures)
         {
             // refs
-            referees.Add(fixture.Referee);
+            if(fixture.Referee != null)
+                referees.Add(fixture.Referee);
+
+            if (fixture.HomeTeam == null || fixture.AwayTeam == null)
+                continue;
 
             if (!map.ContainsKey(fixture.HomeTeam))
             {
@@ -480,6 +527,9 @@ public class DataCompiler : MonoBehaviour {
     {
         foreach (Fixture fixture in fixtures)
         {
+            if (fixture == null || fixture.HomeTeam == null || fixture.AwayTeam == null)
+                continue;
+
             //** actual results **
             if (fixture.FTHG > fixture.FTAG)
             {
@@ -493,7 +543,6 @@ public class DataCompiler : MonoBehaviour {
             }
             else
             {
-                // draw
                 map[fixture.HomeTeam].points = map[fixture.HomeTeam].points + 1;
                 map[fixture.AwayTeam].points = map[fixture.AwayTeam].points + 1;
             }
@@ -789,6 +838,10 @@ public class DataCompiler : MonoBehaviour {
         // create map of teams with points collected as value    
         foreach (Fixture fixture in fixturesTemp)
         {
+
+            if (fixture.HomeTeam == null || fixture.AwayTeam == null)
+                continue;
+
             if (map[fixture.HomeTeam].played >= totalGamesAllowed)
             {
                 // skip this fixture

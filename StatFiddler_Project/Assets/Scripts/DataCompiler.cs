@@ -210,6 +210,7 @@ public class DataCompiler : MonoBehaviour {
     }
 
     bool updateDivisionEnabled = true;
+    bool refreshOptions = false;
 
     public void UpdateCountry()
     {
@@ -286,7 +287,9 @@ public class DataCompiler : MonoBehaviour {
         updateDivisionEnabled = true;
 
         // just do once at the end
+        refreshOptions = true;  // we need to rebuild options in case we are in division that does not exist for the new country
         UpdateDivision();
+        refreshOptions = false;
 
     }
 
@@ -313,19 +316,21 @@ public class DataCompiler : MonoBehaviour {
         if (country == 0)
         {
             // EN
-            DropDownDivision.GetComponent<Dropdown>().ClearOptions();
-            optionsDiv.Add("PREMIER LEAGUE");
-            optionsDiv.Add("CHAMPIONSHIP");
-            optionsDiv.Add("DIVISION 1");
-            optionsDiv.Add("DIVISION 2");
-            optionsDiv.Add("CONFERENCE");
-            DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
-
             // how many divisions does each year have?    18
             int[] divCount = new int[] { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
-            if(divCount[year] < 5)
-                DropDownDivision.GetComponent<Dropdown>().options.RemoveAt(4);
+            if (refreshOptions)
+            {
+                DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+                optionsDiv.Add("PREMIER LEAGUE");
+                optionsDiv.Add("CHAMPIONSHIP");
+                optionsDiv.Add("DIVISION 1");
+                optionsDiv.Add("DIVISION 2");
+                optionsDiv.Add("CONFERENCE");
+                DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
 
+                if (divCount[year] < 5)
+                    DropDownDivision.GetComponent<Dropdown>().options.RemoveAt(4);
+            }
             dbManagerCurr = dbManagerArr[year];
             div = DropDownDivision.GetComponent<Dropdown>().value;
 

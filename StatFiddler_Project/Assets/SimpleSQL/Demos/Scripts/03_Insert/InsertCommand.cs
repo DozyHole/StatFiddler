@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System;
 using System.Linq;
@@ -23,9 +24,14 @@ public class InsertCommand : MonoBehaviour {
 	
 	// reference to our db manager object
 	public SimpleSQL.SimpleSQLManager dbManager;
-	
+
+    // input fields
+    public InputField playerNameInput;
+    public InputField totalKillsInput;
+    public InputField pointsInput;
+
 	// reference to our output text object
-	public GUIText outputText;
+	public Text outputText;
 	
 	void Start()
 	{
@@ -35,105 +41,72 @@ public class InsertCommand : MonoBehaviour {
 		// reset the GUI and reload
 		ResetGUI();
 	}
-	
-	void OnGUI()
-	{
-		GUILayout.BeginVertical();
-		
-		GUILayout.Space(10.0f);
-		
-		GUILayout.BeginHorizontal();
-		
-		GUILayout.Space(10.0f);
-		
-		GUILayout.BeginVertical();
-		
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Player Name:", GUILayout.Width(100.0f));
-		_newPlayerName = GUILayout.TextField(_newPlayerName, GUILayout.Width(200.0f));
-		GUILayout.EndHorizontal();
-		
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Total Kills:", GUILayout.Width(100.0f));
-		_newPlayerTotalKills = GUILayout.TextField(_newPlayerTotalKills, GUILayout.Width(200.0f));
-		GUILayout.EndHorizontal();
 
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Points:", GUILayout.Width(100.0f));
-		_newPlayerPoints = GUILayout.TextField(_newPlayerPoints, GUILayout.Width(200.0f));
-		GUILayout.EndHorizontal();
-		
-		int totalKills;
-		int points;
-		
-		if (!int.TryParse(_newPlayerTotalKills, out totalKills))
-			totalKills = 0;
-		
-		if (!int.TryParse(_newPlayerPoints, out points))
-			points = 0;
-		
-		GUILayout.BeginHorizontal();
-		if (GUILayout.Button("Insert", GUILayout.Width(100.0f)))
-		{
-			SavePlayerStats_Simple(_newPlayerName, totalKills, points);
-			ResetGUI();
-		}
-		GUILayout.Label("OR", GUILayout.Width(30.0f));
-		if (GUILayout.Button("Insert Query", GUILayout.Width(100.0f)))
-		{
-			SavePlayerStats_Query(_newPlayerName, totalKills, points);
-			ResetGUI();
-		}
-		GUILayout.Label("OR", GUILayout.Width(30.0f));
-		if (GUILayout.Button("Insert 3 Times", GUILayout.Width(200.0f)))
-		{
-			SavePlayerStats_SimpleThreeTimes(_newPlayerName, totalKills, points);
-			ResetGUI();
-		}
-		GUILayout.Label("OR", GUILayout.Width(30.0f));
-		if (GUILayout.Button("Insert 3 Times Query", GUILayout.Width(200.0f)))
-		{
-			SavePlayerStats_QueryThreeTimes(_newPlayerName, totalKills, points);
-			ResetGUI();
-		}
-		GUILayout.EndHorizontal();
-		
-		GUILayout.Space(20.0f);
-
-		GUILayout.BeginHorizontal();
-		GUILayout.Label("Player", GUILayout.Width(200.0f));
-		GUILayout.Label("Total Kills", GUILayout.Width(150.0f));
-		GUILayout.Label("Points", GUILayout.Width(150.0f));
-		GUILayout.EndHorizontal();
-		
-		GUILayout.Label("-----------------------------------------------------------------------------------------------------------------------------------------");
-		
-		foreach (PlayerStats playerStats in _playerStatsList)
-		{
-			GUILayout.BeginHorizontal();
-			GUILayout.Label(playerStats.PlayerName, GUILayout.Width(200.0f));
-			GUILayout.Label(playerStats.TotalKills.ToString(), GUILayout.Width(150.0f));
-			GUILayout.Label(playerStats.Points.ToString(), GUILayout.Width(150.0f));
-			GUILayout.EndHorizontal();
-		}
-		
-		GUILayout.EndVertical();
-		
-		GUILayout.EndHorizontal();
-		
-		GUILayout.EndVertical();
-	}
-	
 	private void ResetGUI()
 	{
 		// Reset the temporary GUI variables
-		_newPlayerName = "";
-		_newPlayerTotalKills = "";
-		_newPlayerPoints = "";
+		playerNameInput.text = "";
+        totalKillsInput.text = "";
+        pointsInput.text = "";
 		
-		// Loads the player stats from the database using Linq
+		// Loads the player stats from the database using Linq (not required to use Linq, but this is a simple example)
 		_playerStatsList = new List<PlayerStats> (from ps in dbManager.Table<PlayerStats> () select ps);
+
+        outputText.text = "";
+
+        foreach (var playerStatRecord in _playerStatsList)
+        {
+            outputText.text += "<color=#1abc9c>Name:</color> " + playerStatRecord.PlayerName + " " +
+                                "<color=#1abc9c>Total Kills:</color> " + playerStatRecord.TotalKills.ToString() + " " +
+                                "<color=#1abc9c>Points:</color> " + playerStatRecord.Points.ToString() + "\n";
+        }
 	}
+
+    /// <summary>
+    /// Calls the appropriate insert method based on the button clicked
+    /// </summary>
+    /// <param name="method"></param>
+    public void Insert(string method)
+    {
+        var playerName = playerNameInput.text;
+        var totalKills = 0;
+        var points = 0;
+
+        if (!int.TryParse(totalKillsInput.text, out totalKills))
+            totalKills = 0;
+
+        if (!int.TryParse(pointsInput.text, out points))
+            points = 0;
+
+        switch (method)
+        {
+            case "Insert":
+
+                SavePlayerStats_Simple(playerName, totalKills, points);
+
+                break;
+
+            case "Query":
+
+                SavePlayerStats_Query(playerName, totalKills, points);
+
+                break;
+
+            case "Insert3":
+
+                SavePlayerStats_SimpleThreeTimes(playerName, totalKills, points);
+
+                break;
+
+            case "Query3":
+
+                SavePlayerStats_QueryThreeTimes(playerName, totalKills, points);
+
+                break;
+        }
+
+        ResetGUI();
+    }
 	
 	/// <summary>
 	/// Saves the player stats by using the PlayerStats class structure. No need for SQL here.

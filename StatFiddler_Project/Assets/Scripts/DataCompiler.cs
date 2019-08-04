@@ -312,13 +312,14 @@ public class DataCompiler : MonoBehaviour {
         Debug.Log("year " + year);
         Debug.Log("country " + country);
 
+        div = DropDownDivision.GetComponent<Dropdown>().value;
         List<string> optionsDiv = new List<string>();
         if (country == 0)
         {
             // EN
             // how many divisions does each year have?    18
-            int[] divCount = new int[] { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
-            if (refreshOptions)
+            int[] divCount = new int[] { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
+            if (true) //refreshOptions)
             {
                 DropDownDivision.GetComponent<Dropdown>().ClearOptions();
                 optionsDiv.Add("PREMIER LEAGUE");
@@ -332,7 +333,8 @@ public class DataCompiler : MonoBehaviour {
                     DropDownDivision.GetComponent<Dropdown>().options.RemoveAt(4);
             }
             dbManagerCurr = dbManagerArr[year];
-            div = DropDownDivision.GetComponent<Dropdown>().value;
+            //div = DropDownDivision.GetComponent<Dropdown>().value;
+      
 
             // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
             while(div >= divCount[year])
@@ -387,6 +389,12 @@ public class DataCompiler : MonoBehaviour {
         int totalTeams = map.Count;
         TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * 2;
         TotalGamesPlayedSlider.GetComponent<Slider>().value = (totalTeams - 1) * 2;
+
+        Debug.Log(totalTeams);
+
+        updateDivisionEnabled = false;
+        DropDownDivision.GetComponent<Dropdown>().value = div;
+        updateDivisionEnabled = true;
 
         txtYear.GetComponent<Text>().text = DropDownYear.GetComponent<Dropdown>().options[year].text;
         txtDivision.GetComponent<Text>().text = DropDownDivision.GetComponent<Dropdown>().options[div].text;

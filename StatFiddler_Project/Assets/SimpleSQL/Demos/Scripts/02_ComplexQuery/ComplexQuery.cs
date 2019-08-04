@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -13,13 +14,13 @@ using System.Linq;
 public class ComplexQuery : MonoBehaviour {
 	
 	public SimpleSQL.SimpleSQLManager dbManager;
-	public GUIText outputText;
+	public Text outputText;
 	
 	void Start () 
 	{
 		// alternate way of populating an entire table without using a SQL statement. This uses Linq.
 		// You could also use "SELECT * FROM Location" with a Query function without Linq.
-		List<Location> startingLocations = new List<Location> (from loc in dbManager.Table<Location> () select loc);
+		List<Location> startingLocationList = new List<Location> (from loc in dbManager.Table<Location> () select loc);
 
 		// set up a sql query that we will reuse,
 		// binding the parameter denoted by ? with the location id
@@ -42,23 +43,23 @@ public class ComplexQuery : MonoBehaviour {
 		
 		// loop through each starting location and gather the list of adjacent location based on our mapping table
 		// using the premade query above.
-		foreach (Location startingLocation in startingLocations)
+		foreach (Location startingLocation in startingLocationList)
 		{
 			startingLocation.AdjacentLocations = dbManager.Query<Location>(sql, startingLocation.LocationID);
 		}
 		
 		// output our list of starting locations along with their corresponding adjacent locations
 		outputText.text = "Map adjacent locations:\n\n";
-		foreach (Location startingLocation in startingLocations)
+		foreach (Location startingLocationRecord in startingLocationList)
 		{
-			outputText.text += startingLocation.LocationName + " is next to:  ";
-			foreach (Location adjacentLocation in startingLocation.AdjacentLocations)
+			outputText.text += "<color=#1abc9c>" + startingLocationRecord.LocationName + "</color> is next to:  <color=#34495e>";
+			foreach (Location adjacentLocation in startingLocationRecord.AdjacentLocations)
 			{
 				outputText.text += adjacentLocation.LocationName + ", ";
 			}
 			// trim off last comma
 			outputText.text = outputText.text.Substring(0, outputText.text.Length - 2);
-			outputText.text += "\n";
+			outputText.text += "</color>\n";
 		}
 	}
 }

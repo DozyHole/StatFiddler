@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.UI;
 using System.Collections.Generic;
 
 /// <summary>
@@ -14,12 +15,12 @@ public class SimpleQuery : MonoBehaviour {
 	public SimpleSQL.SimpleSQLManager dbManager;
 	
 	// reference to the gui text object in our scene that will be used for output
-	public GUIText outputText;
+	public Text outputText;
 	
 	void Start () 
 	{
 		// Gather a list of weapons and their type names pulled from the weapontype table		
-		List<Weapon> weapons = dbManager.Query<Weapon>(
+		List<Weapon> weaponList = dbManager.Query<Weapon>(
 														"SELECT " + 
 															"W.WeaponID, " + 
 															"W.WeaponName, " + 
@@ -38,22 +39,22 @@ public class SimpleQuery : MonoBehaviour {
 		
 		// output the list of weapons
 		outputText.text = "Weapons\n\n";
-		foreach (Weapon weapon in weapons)
+		foreach (Weapon weaponRecord in weaponList)
 		{
-			outputText.text += "Name: '" + weapon.WeaponName + "' " + 
-								"Damage:" + weapon.Damage.ToString() + " " + 
-								"Cost:" + weapon.Cost.ToString() + " " + 
-								"Weight:" + weapon.Weight.ToString() + " " + 
-								"Type:" + weapon.WeaponTypeDescription + "\n";
+			outputText.text += "<color=#1abc9c>Name</color>: '" + weaponRecord.WeaponName + "' " +
+                                "<color=#1abc9c>Damage</color>:" + weaponRecord.Damage.ToString() + " " +
+                                "<color=#1abc9c>Cost</color>:" + weaponRecord.Cost.ToString() + " " +
+                                "<color=#1abc9c>Weight</color>:" + weaponRecord.Weight.ToString() + " " +
+                                "<color=#1abc9c>Type</color>:" + weaponRecord.WeaponTypeDescription + "\n";
 		}
 
 
         // get the first weapon record that has a WeaponID > 4
 		outputText.text += "\nFirst weapon record where the WeaponID > 4: ";
         bool recordExists;
-        Weapon firstWeapon = dbManager.QueryFirstRecord<Weapon>(out recordExists, "SELECT WeaponName FROM Weapon WHERE WeaponID > 4");
+        Weapon firstWeaponRecord = dbManager.QueryFirstRecord<Weapon>(out recordExists, "SELECT WeaponName FROM Weapon WHERE WeaponID > 4");
         if (recordExists)
-            outputText.text += firstWeapon.WeaponName + "\n";
+            outputText.text += firstWeaponRecord.WeaponName + "\n";
         else
             outputText.text += "No record found\n";
 

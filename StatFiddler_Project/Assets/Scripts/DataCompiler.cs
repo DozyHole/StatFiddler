@@ -273,6 +273,37 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("SERIE B");
 
             optionsYear.Add("2018-2019");
+            optionsYear.Add("2017-2018");
+            optionsYear.Add("2016-2017");
+            optionsYear.Add("2015-2016");
+
+            optionsYear.Add("2014-2015");
+            optionsYear.Add("2013-2014");
+            optionsYear.Add("2012-2013");
+            optionsYear.Add("2011-2012");
+
+            optionsYear.Add("2010-2011");
+            optionsYear.Add("2009-2010");
+            optionsYear.Add("2008-2009");
+            optionsYear.Add("2007-2008");
+
+            optionsYear.Add("2006-2007");
+            optionsYear.Add("2005-2006");
+            optionsYear.Add("2004-2005");
+            optionsYear.Add("2003-2004");
+
+            optionsYear.Add("2002-2003");
+            optionsYear.Add("2001-2002");
+            optionsYear.Add("2000-2001");
+            optionsYear.Add("1999-2000");
+
+            optionsYear.Add("1998-1999");
+            optionsYear.Add("1997-1998");
+            optionsYear.Add("1996-1997");
+            optionsYear.Add("1995-1996");
+
+            optionsYear.Add("1994-1995");
+            optionsYear.Add("1993-1994");
         }
 
         DropDownDivision.GetComponent<Dropdown>().ClearOptions();

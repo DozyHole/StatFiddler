@@ -14,6 +14,7 @@ class TeamData
     public int positionAltered;
     public int points;
     public int pointsAltered;
+    public int playedReal;
     // for share page
     public int played;
     public int won;
@@ -98,6 +99,8 @@ public class DataCompiler : MonoBehaviour {
     public SimpleSQL.SimpleSQLManager dbManager;
     public SimpleSQL.SimpleSQLManager[] dbManagerArr;
     public SimpleSQL.SimpleSQLManager[] dbManagerArrItaly;
+    public SimpleSQL.SimpleSQLManager[] dbManagerArrGermany;
+    public SimpleSQL.SimpleSQLManager[] dbManagerArrScotland;
     public SimpleSQL.SimpleSQLManager[] dbManagerArrSpain;
     SimpleSQL.SimpleSQLManager dbManagerCurr;
 
@@ -152,10 +155,12 @@ public class DataCompiler : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        // dort so we can add new databases to array and always have most recent first in array
+        // sort so we can add new databases to array and always have most recent first in array
         Array.Sort<SimpleSQLManager>(dbManagerArr,      SortDataBaseManagers);
         Array.Sort<SimpleSQLManager>(dbManagerArrItaly, SortDataBaseManagers);
         Array.Sort<SimpleSQLManager>(dbManagerArrSpain, SortDataBaseManagers);
+        Array.Sort<SimpleSQLManager>(dbManagerArrGermany, SortDataBaseManagers);
+        Array.Sort<SimpleSQLManager>(dbManagerArrScotland, SortDataBaseManagers);
         var sorted = dbManagerArr.OrderBy(item => item.databaseFile.name); 
         map                 = new Dictionary<string, TeamData>();
         fixturesDeepCopy    = null;
@@ -186,6 +191,53 @@ public class DataCompiler : MonoBehaviour {
             m.Close();
             m.Dispose();
         }
+        foreach (SimpleSQL.SimpleSQLManager m in dbManagerArrGermany)
+        {
+            m.Close();
+            m.Dispose();
+        }
+        foreach (SimpleSQL.SimpleSQLManager m in dbManagerArrScotland)
+        {
+            m.Close();
+            m.Dispose();
+        }
+    }
+
+    void AddOptionsYears(List<string> optionsYear, int count)
+    {
+        List<String> potentialYears = new List<String>();
+        potentialYears.Add("2018-2019");
+        potentialYears.Add("2017-2018");
+        potentialYears.Add("2016-2017");
+        potentialYears.Add("2015-2016");
+        potentialYears.Add("2014-2015");
+        potentialYears.Add("2013-2014");
+        potentialYears.Add("2012-2013");
+        potentialYears.Add("2011-2012");
+        potentialYears.Add("2010-2011");
+        potentialYears.Add("2009-2010");
+        potentialYears.Add("2008-2009");
+        potentialYears.Add("2007-2008");
+        potentialYears.Add("2006-2007");
+        potentialYears.Add("2005-2006");
+        potentialYears.Add("2004-2005");
+        potentialYears.Add("2003-2004");
+        potentialYears.Add("2002-2003");
+        potentialYears.Add("2001-2002");
+        potentialYears.Add("2000-2001");
+        potentialYears.Add("1999-2000");
+        potentialYears.Add("1998-1999");
+        potentialYears.Add("1997-1998");
+        potentialYears.Add("1996-1997");
+        potentialYears.Add("1995-1996");
+        potentialYears.Add("1994-1995");
+        potentialYears.Add("1993-1994");
+
+        for(int i = 0; i < count; i++)
+        {
+            optionsYear.Add(potentialYears[i]);
+        }
+
     }
 
     public void ResetGui()
@@ -231,39 +283,7 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("DIVISION 2");
             optionsDiv.Add("CONFERENCE");
 
-            optionsYear.Add("2018-2019");
-            optionsYear.Add("2017-2018");
-            optionsYear.Add("2016-2017");
-            optionsYear.Add("2015-2016");
-
-            optionsYear.Add("2014-2015");
-            optionsYear.Add("2013-2014");
-            optionsYear.Add("2012-2013");
-            optionsYear.Add("2011-2012");
-
-            optionsYear.Add("2010-2011");
-            optionsYear.Add("2009-2010");
-            optionsYear.Add("2008-2009");
-            optionsYear.Add("2007-2008");
-
-            optionsYear.Add("2006-2007");
-            optionsYear.Add("2005-2006");
-            optionsYear.Add("2004-2005");
-            optionsYear.Add("2003-2004");
-
-            optionsYear.Add("2002-2003");
-            optionsYear.Add("2001-2002");
-            optionsYear.Add("2000-2001");
-            optionsYear.Add("1999-2000");
-
-            optionsYear.Add("1998-1999");
-            optionsYear.Add("1997-1998");
-            optionsYear.Add("1996-1997");
-            optionsYear.Add("1995-1996");
-
-            optionsYear.Add("1994-1995");
-            optionsYear.Add("1993-1994");
-
+            AddOptionsYears(optionsYear, 26);
         }
         if (country == 1)
         {
@@ -272,40 +292,26 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("SERIE A");
             optionsDiv.Add("SERIE B");
 
-            optionsYear.Add("2018-2019");
-            optionsYear.Add("2017-2018");
-            optionsYear.Add("2016-2017");
-            optionsYear.Add("2015-2016");
-
-            optionsYear.Add("2014-2015");
-            optionsYear.Add("2013-2014");
-            optionsYear.Add("2012-2013");
-            optionsYear.Add("2011-2012");
-
-            optionsYear.Add("2010-2011");
-            optionsYear.Add("2009-2010");
-            optionsYear.Add("2008-2009");
-            optionsYear.Add("2007-2008");
-
-            optionsYear.Add("2006-2007");
-            optionsYear.Add("2005-2006");
-            optionsYear.Add("2004-2005");
-            optionsYear.Add("2003-2004");
-
-            optionsYear.Add("2002-2003");
-            optionsYear.Add("2001-2002");
-            optionsYear.Add("2000-2001");
-            optionsYear.Add("1999-2000");
-
-            optionsYear.Add("1998-1999");
-            optionsYear.Add("1997-1998");
-            optionsYear.Add("1996-1997");
-            optionsYear.Add("1995-1996");
-
-            optionsYear.Add("1994-1995");
-            optionsYear.Add("1993-1994");
+            AddOptionsYears(optionsYear, 26);
         }
+        if (country == 2)
+        {
+            // GE
+            dbManagerCurr = dbManagerArrGermany[0];
+            optionsDiv.Add("BUNDESLIGA");
+            optionsDiv.Add("2.BUNDESLIGA");
 
+            AddOptionsYears(optionsYear, 26);
+        }
+        if (country == 3)
+        {
+            // SC
+            dbManagerCurr = dbManagerArrScotland[0];
+            optionsDiv.Add("PREMIERSHIP");
+            optionsDiv.Add("CHAMPIONSHIP");
+
+            AddOptionsYears(optionsYear, 25);
+        }
         DropDownDivision.GetComponent<Dropdown>().ClearOptions();
         DropDownYear.GetComponent<Dropdown>().ClearOptions();
 
@@ -364,9 +370,6 @@ public class DataCompiler : MonoBehaviour {
                     DropDownDivision.GetComponent<Dropdown>().options.RemoveAt(4);
             }
             dbManagerCurr = dbManagerArr[year];
-            //div = DropDownDivision.GetComponent<Dropdown>().value;
-      
-
             // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
             while(div >= divCount[year])
             {
@@ -410,16 +413,81 @@ public class DataCompiler : MonoBehaviour {
                     break;
             }
         }
+        else if (country == 2)
+        {
+            // Germany
+            dbManagerCurr = dbManagerArrGermany[year];
+            div = DropDownDivision.GetComponent<Dropdown>().value;
+            strDiv = "D1";
+            switch (div)
+            {
+                case 0:
+                    strDiv = "D1";
+                    break;
+                case 1:
+                    strDiv = "D2";
+                    break;
+            }
+        }
+        else if (country == 3)
+        {
+            // Scotland
+            // how many divisions does each year have?    25
+            int[] divCount = new int[] {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 2 };
+            if (true) //refreshOptions)
+            {
+                DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+                optionsDiv.Add("PREMIERSHIP");
+                optionsDiv.Add("CHAMPIONSHIP");
+                optionsDiv.Add("LEAGUE ONE");
+                optionsDiv.Add("LEAGUE TWO");
+                DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
 
+                if (divCount[year] == 2)
+                {
+                    DropDownDivision.GetComponent<Dropdown>().options.RemoveRange(2, 2);
+                }
+            }
+            dbManagerCurr = dbManagerArrScotland[year];
+            // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
+            while (div >= divCount[year])
+            {
+                div--;
+                DropDownDivision.GetComponent<Dropdown>().value = div;
+            }
+
+            strDiv = "SC0";
+            switch (div)
+            {
+                case 0:
+                    strDiv = "SC0";
+                    break;
+                case 1:
+                    strDiv = "SC1";
+                    break;
+                case 2:
+                    strDiv = "SC2";
+                    break;
+                case 3:
+                    strDiv = "SC3";
+                    break;
+            }
+
+        }
         string sql = "SELECT * FROM " + strDiv;
         fixtures = dbManagerCurr.Query<Fixture>(sql);
         UpdateDataReal();
 
+        // to do, get actual games played (partial season etc)
         // set max games
         // total games per team
         int totalTeams = map.Count;
-        TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * 2;
-        TotalGamesPlayedSlider.GetComponent<Slider>().value = (totalTeams - 1) * 2;
+        //TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = (totalTeams - 1) * headToHeadCount;
+        //TotalGamesPlayedSlider.GetComponent<Slider>().value = (totalTeams - 1) * headToHeadCount;
+        int played = map.ElementAt(0).Value.playedReal;
+        TotalGamesPlayedSlider.GetComponent<Slider>().maxValue = played;
+        TotalGamesPlayedSlider.GetComponent<Slider>().value = played;
+
 
         Debug.Log(totalTeams);
 
@@ -502,9 +570,13 @@ public class DataCompiler : MonoBehaviour {
             if (fixture.HomeTeam == null || fixture.AwayTeam == null)
                 continue;
 
+            if (fixture.HomeTeam == "" || fixture.AwayTeam == "")
+                continue;
+
             if (!map.ContainsKey(fixture.HomeTeam))
             {
                 TeamData data = new TeamData();
+                data.playedReal = 0;
                 data.position = 0;
                 data.points = 0;
                 data.pointsAltered = 0;
@@ -514,6 +586,7 @@ public class DataCompiler : MonoBehaviour {
             if (!map.ContainsKey(fixture.AwayTeam))
             {
                 TeamData data = new TeamData();
+                data.playedReal = 0;
                 data.position = 0;
                 data.points = 0;
                 data.pointsAltered = 0;
@@ -574,6 +647,11 @@ public class DataCompiler : MonoBehaviour {
             if (fixture == null || fixture.HomeTeam == null || fixture.AwayTeam == null)
                 continue;
 
+            if (fixture.HomeTeam == "" || fixture.AwayTeam == "")
+                continue;
+
+            map[fixture.HomeTeam].playedReal++;
+            map[fixture.AwayTeam].playedReal++;
             //** actual results **
             if (fixture.FTHG > fixture.FTAG)
             {
@@ -587,6 +665,7 @@ public class DataCompiler : MonoBehaviour {
             }
             else
             {
+                // draw
                 map[fixture.HomeTeam].points = map[fixture.HomeTeam].points + 1;
                 map[fixture.AwayTeam].points = map[fixture.AwayTeam].points + 1;
             }
@@ -884,6 +963,9 @@ public class DataCompiler : MonoBehaviour {
         {
 
             if (fixture.HomeTeam == null || fixture.AwayTeam == null)
+                continue;
+
+            if (fixture.HomeTeam == "" || fixture.AwayTeam == "")
                 continue;
 
             if (map[fixture.HomeTeam].played >= totalGamesAllowed)

@@ -312,6 +312,15 @@ public class DataCompiler : MonoBehaviour {
 
             AddOptionsYears(optionsYear, 25);
         }
+        if (country == 4)
+        {
+            // SP
+            dbManagerCurr = dbManagerArrSpain[0];
+            optionsDiv.Add("LA LIGA");
+            optionsDiv.Add("SEGUNDA");
+
+            AddOptionsYears(optionsYear, 25);
+        }
         DropDownDivision.GetComponent<Dropdown>().ClearOptions();
         DropDownYear.GetComponent<Dropdown>().ClearOptions();
 
@@ -473,6 +482,23 @@ public class DataCompiler : MonoBehaviour {
                     break;
             }
 
+        }
+        else if(country==4)
+        {
+ 
+            // Spain
+            dbManagerCurr = dbManagerArrSpain[year];
+            div = DropDownDivision.GetComponent<Dropdown>().value;
+            strDiv = "SP1";
+            switch (div)
+            {
+                case 0:
+                    strDiv = "SP1";
+                    break;
+                case 1:
+                    strDiv = "SP2";
+                    break;
+            }
         }
         string sql = "SELECT * FROM " + strDiv;
         fixtures = dbManagerCurr.Query<Fixture>(sql);

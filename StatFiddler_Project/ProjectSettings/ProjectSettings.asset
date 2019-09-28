@@ -168,7 +168,7 @@ PlayerSettings:
     tvOS: com.Pandapus.StatFiddler
   buildNumber:
     iPhone: 0
-  AndroidBundleVersionCode: 6
+  AndroidBundleVersionCode: 7
   AndroidMinSdkVersion: 16
   AndroidTargetSdkVersion: 0
   AndroidPreferredInstallLocation: 1

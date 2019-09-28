@@ -102,6 +102,7 @@ public class DataCompiler : MonoBehaviour {
     public SimpleSQL.SimpleSQLManager[] dbManagerArrGermany;
     public SimpleSQL.SimpleSQLManager[] dbManagerArrScotland;
     public SimpleSQL.SimpleSQLManager[] dbManagerArrSpain;
+    public SimpleSQL.SimpleSQLManager[] dbManagerArrFrance;
     SimpleSQL.SimpleSQLManager dbManagerCurr;
 
     // Main Canvas View
@@ -161,6 +162,7 @@ public class DataCompiler : MonoBehaviour {
         Array.Sort<SimpleSQLManager>(dbManagerArrSpain, SortDataBaseManagers);
         Array.Sort<SimpleSQLManager>(dbManagerArrGermany, SortDataBaseManagers);
         Array.Sort<SimpleSQLManager>(dbManagerArrScotland, SortDataBaseManagers);
+        Array.Sort<SimpleSQLManager>(dbManagerArrFrance, SortDataBaseManagers);
         var sorted = dbManagerArr.OrderBy(item => item.databaseFile.name); 
         map                 = new Dictionary<string, TeamData>();
         fixturesDeepCopy    = null;
@@ -201,11 +203,17 @@ public class DataCompiler : MonoBehaviour {
             m.Close();
             m.Dispose();
         }
+        foreach (SimpleSQL.SimpleSQLManager m in dbManagerArrFrance)
+        {
+            m.Close();
+            m.Dispose();
+        }
     }
 
     void AddOptionsYears(List<string> optionsYear, int count)
     {
         List<String> potentialYears = new List<String>();
+        potentialYears.Add("2019-2020");
         potentialYears.Add("2018-2019");
         potentialYears.Add("2017-2018");
         potentialYears.Add("2016-2017");
@@ -283,7 +291,7 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("DIVISION 2");
             optionsDiv.Add("CONFERENCE");
 
-            AddOptionsYears(optionsYear, 26);
+            AddOptionsYears(optionsYear, 27);
         }
         if (country == 1)
         {
@@ -292,7 +300,7 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("SERIE A");
             optionsDiv.Add("SERIE B");
 
-            AddOptionsYears(optionsYear, 26);
+            AddOptionsYears(optionsYear, 27);
         }
         if (country == 2)
         {
@@ -301,7 +309,7 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("BUNDESLIGA");
             optionsDiv.Add("2.BUNDESLIGA");
 
-            AddOptionsYears(optionsYear, 26);
+            AddOptionsYears(optionsYear, 27);
         }
         if (country == 3)
         {
@@ -309,8 +317,9 @@ public class DataCompiler : MonoBehaviour {
             dbManagerCurr = dbManagerArrScotland[0];
             optionsDiv.Add("PREMIERSHIP");
             optionsDiv.Add("CHAMPIONSHIP");
-
-            AddOptionsYears(optionsYear, 25);
+            optionsDiv.Add("LEAGUE ONE");
+            optionsDiv.Add("LEAGUE TWO");
+            AddOptionsYears(optionsYear, 26);
         }
         if (country == 4)
         {
@@ -319,7 +328,16 @@ public class DataCompiler : MonoBehaviour {
             optionsDiv.Add("LA LIGA");
             optionsDiv.Add("SEGUNDA");
 
-            AddOptionsYears(optionsYear, 25);
+            AddOptionsYears(optionsYear, 27);
+        }
+        if (country == 5)
+        {
+            // FR
+            dbManagerCurr = dbManagerArrFrance[0];
+            optionsDiv.Add("LIGUE 1");
+            optionsDiv.Add("LIGUE 2");
+
+            AddOptionsYears(optionsYear, 27);
         }
         DropDownDivision.GetComponent<Dropdown>().ClearOptions();
         DropDownYear.GetComponent<Dropdown>().ClearOptions();
@@ -363,8 +381,8 @@ public class DataCompiler : MonoBehaviour {
         if (country == 0)
         {
             // EN
-            // how many divisions does each year have?    18
-            int[] divCount = new int[] { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
+            // how many divisions does each year have?    27 years
+            int[] divCount = new int[] { 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4 };
             if (true) //refreshOptions)
             {
                 DropDownDivision.GetComponent<Dropdown>().ClearOptions();
@@ -409,8 +427,27 @@ public class DataCompiler : MonoBehaviour {
         else if (country == 1)
         {
             // Italy
+            // how many divisions does each year have?    27
+            int[] divCount = new int[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1 };
+            if (true)
+            {
+                DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+                optionsDiv.Add("SERIE A");
+                optionsDiv.Add("SERIE B");
+                DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
+
+                if (divCount[year] == 1)
+                {
+                    DropDownDivision.GetComponent<Dropdown>().options.RemoveRange(1, 1);
+                }
+            }
             dbManagerCurr = dbManagerArrItaly[year];
-            div = DropDownDivision.GetComponent<Dropdown>().value;
+            // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
+            while (div >= divCount[year])
+            {
+                div--;
+                DropDownDivision.GetComponent<Dropdown>().value = div;
+            }
             strDiv = "I1";
             switch (div)
             {
@@ -441,8 +478,8 @@ public class DataCompiler : MonoBehaviour {
         else if (country == 3)
         {
             // Scotland
-            // how many divisions does each year have?    25
-            int[] divCount = new int[] {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 2 };
+            // how many divisions does each year have?    26
+            int[] divCount = new int[] {4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 2, 2, 2 };
             if (true) //refreshOptions)
             {
                 DropDownDivision.GetComponent<Dropdown>().ClearOptions();
@@ -485,10 +522,29 @@ public class DataCompiler : MonoBehaviour {
         }
         else if(country==4)
         {
- 
             // Spain
+            // how many divisions does each year have?    27
+            int[] divCount = new int[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1 };
+            if (true) 
+            {
+                DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+                optionsDiv.Add("LA LIGA");
+                optionsDiv.Add("SEGUNDA");
+                DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
+
+                if (divCount[year] == 1)
+                {
+                    DropDownDivision.GetComponent<Dropdown>().options.RemoveRange(1, 1);
+                }
+            }
             dbManagerCurr = dbManagerArrSpain[year];
-            div = DropDownDivision.GetComponent<Dropdown>().value;
+            // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
+            while (div >= divCount[year])
+            {
+                div--;
+                DropDownDivision.GetComponent<Dropdown>().value = div;
+            }
+
             strDiv = "SP1";
             switch (div)
             {
@@ -497,6 +553,42 @@ public class DataCompiler : MonoBehaviour {
                     break;
                 case 1:
                     strDiv = "SP2";
+                    break;
+            }
+        }
+        else if (country == 5)
+        {
+            // France
+            // how many divisions does each year have?    27
+            int[] divCount = new int[] { 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1 };
+            if (true)
+            {
+                DropDownDivision.GetComponent<Dropdown>().ClearOptions();
+                optionsDiv.Add("LIGUE 1");
+                optionsDiv.Add("LIGUE 2");
+                DropDownDivision.GetComponent<Dropdown>().AddOptions(optionsDiv);
+
+                if (divCount[year] == 1)
+                {
+                    DropDownDivision.GetComponent<Dropdown>().options.RemoveRange(1, 1);
+                }
+            }
+            dbManagerCurr = dbManagerArrFrance[year];
+            // deal with if we select a new year but division we are currently on does not exist for that year eg 'en conference 1999'
+            while (div >= divCount[year])
+            {
+                div--;
+                DropDownDivision.GetComponent<Dropdown>().value = div;
+            }
+
+            strDiv = "FR1";
+            switch (div)
+            {
+                case 0:
+                    strDiv = "F1";
+                    break;
+                case 1:
+                    strDiv = "F2";
                     break;
             }
         }

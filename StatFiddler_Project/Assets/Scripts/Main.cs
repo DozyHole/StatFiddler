@@ -3,6 +3,7 @@ using System.Collections;
 using GoogleMobileAds.Api;
 using System;
 using UnityEngine.UI;
+using System.IO;
 
 public class Main : MonoBehaviour {
     public Transform CanvasMain;
@@ -57,7 +58,28 @@ public class Main : MonoBehaviour {
     {
         // Take a screenshot and save it to Gallery/Photos
         HideBeforeSceenshot();
-        StartCoroutine(TakeScreenshotAndSave());
+        StartCoroutine(TakeScreenshotAndShare());
+    }
+
+    private IEnumerator TakeScreenshotAndShare()
+    {
+        yield return new WaitForEndOfFrame();
+
+        Texture2D ss = new Texture2D(Screen.width, Screen.height, TextureFormat.RGB24, false);
+        ss.ReadPixels(new Rect(0, 0, Screen.width, Screen.height), 0, 0);
+        ss.Apply();
+        
+        string filePath = Path.Combine(Application.temporaryCachePath, "shared img.png");
+        File.WriteAllBytes(filePath, ss.EncodeToPNG());
+        // To avoid memory leaks
+        Destroy(ss);
+
+        new NativeShare().AddFile(filePath).SetSubject("Subject goes here").SetText("Hello world!").Share();
+
+        // Share on WhatsApp only, if installed (Android only)
+        //if( NativeShare.TargetExists( "com.whatsapp" ) )
+        //	new NativeShare().AddFile( filePath ).SetText( "Hello world!" ).SetTarget( "com.whatsapp" ).Share();
+
     }
 
     private IEnumerator TakeScreenshotAndSave()

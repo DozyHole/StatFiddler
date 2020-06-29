@@ -21,9 +21,39 @@ public class Main : MonoBehaviour {
     public Transform TxtHeading;
     public Transform TxtMessage;
 
+    // interstitial
+    private InterstitialAd interstitial;
+
+    // todo - call destroy on adBanner and interstitial
+    float nextAdTime        = 0.0f;
+    float adWaitDuration    = 30.0f;
+    float adWaitDurationIncrease = 10.0f;
+    float adWaitDurationMax = 90.0f; 
+
+    // we increase wait time between ads up to a maximum
+    void stepAdTime()
+    {
+        nextAdTime = Time.time + adWaitDuration;
+        adWaitDuration += adWaitDurationIncrease;
+        if (adWaitDuration > adWaitDurationMax)
+            adWaitDuration = adWaitDurationMax;
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (nextAdTime < Time.time)
+        {
+            ShowInterstitial();
+            stepAdTime();
+        }
+    }
+
     // Use this for initialization
     void Start () {
-    #if UNITY_ANDROID
+        stepAdTime();
+
+#if UNITY_ANDROID
         string appId = "ca-app-pub-3290491453629228~5908540561";
     #elif UNITY_IPHONE
             string appId = "";
@@ -38,6 +68,7 @@ public class Main : MonoBehaviour {
         SwitchToMainCanvas();
 
         RequestBanner();
+        RequestInterstitial();
     }
 
     void HideBeforeSceenshot()
@@ -74,8 +105,10 @@ public class Main : MonoBehaviour {
         // To avoid memory leaks
         Destroy(ss);
 
-        new NativeShare().AddFile(filePath).SetSubject("Subject goes here").SetText("Hello world!").Share();
+        new NativeShare().AddFile(filePath).SetSubject("Stat Fiddler").SetText("").Share();
 
+
+        ShowAfterScreenShot();
         // Share on WhatsApp only, if installed (Android only)
         //if( NativeShare.TargetExists( "com.whatsapp" ) )
         //	new NativeShare().AddFile( filePath ).SetText( "Hello world!" ).SetTarget( "com.whatsapp" ).Share();
@@ -144,8 +177,8 @@ public class Main : MonoBehaviour {
     private void RequestBanner()
     {
 #if UNITY_ANDROID
-        string adUnitId = "ca-app-pub-3940256099942544/6300978111"; // test ads
-                                                                    //string adUnitId = "ca-app-pub-3290491453629228/2518646819"; // my ads
+        //string adUnitId = "ca-app-pub-3940256099942544/6300978111"; // test ads
+        string adUnitId = "ca-app-pub-3290491453629228/2518646819"; // my ads
 #elif UNITY_IPHONE
             string adUnitId = "ca-app-pub-3940256099942544/2934735716";
 #else
@@ -185,16 +218,44 @@ public class Main : MonoBehaviour {
 
 
         // Create an empty ad request.
-        AdRequest request = new AdRequest.Builder().Build();
+        AdRequest request = new AdRequest.Builder().AddTestDevice("53EF627C1AD22DBBCAAF3296A78DE88D").Build();
         // Load the banner with the request.
         bannerView.LoadAd(request);
     }
 
+    private void RequestInterstitial()
+    {
+#if UNITY_ANDROID
+        //string adUnitId = "ca-app-pub-3940256099942544/1033173712";  // test ads
+        string adUnitId = "ca-app-pub-3290491453629228/7567318771";   // my ads
+#elif UNITY_IPHONE
+        string adUnitId = "ca-app-pub-3940256099942544/4411468910";
+#else
+        string adUnitId = "unexpected_platform";
+#endif
 
-    // Update is called once per frame
-    void Update () {
-	
-	}
+        // Initialize an InterstitialAd.
+        this.interstitial = new InterstitialAd(adUnitId);
+
+        // Create an empty ad request.
+        AdRequest request = new AdRequest.Builder().AddTestDevice("53EF627C1AD22DBBCAAF3296A78DE88D").Build();
+
+        //setTestDeviceIds(Arrays.asList("53EF627C1AD22DBBCAAF3296A78DE88D") to get test ads on this device.
+
+        // Load the interstitial with the request.
+        this.interstitial.LoadAd(request);
+    }
+
+    private void ShowInterstitial()
+    {
+        if (this.interstitial.IsLoaded())
+        {
+            this.interstitial.Show();
+            this.interstitial.Destroy();
+            RequestInterstitial();
+        }
+
+    }
 
     public void SwitchToShareCanvas()
     {
